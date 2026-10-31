@@ -1,0 +1,56 @@
+# TopoVital Stage 0 — g_star decision record (Development only).
+# Final approval of g_star = 250 ms given by the researcher on 2026-10-31.
+# Hash fields below are unchanged from the reviewed draft and were re-verified
+# against the current files immediately before freeze.
+g_star: 250
+decided_by: "Sunjun Hwang, Principal Investigator / Research Lead"  # entered by the researcher 2026-10-31; romanized per amendment AM-01
+approval_date: "2026-10-31"
+decision_procedure: >-
+  On Development only, compute R-peak minus detected QRS-onset for valid
+  delineations; choose the smallest g in [200, 250, 300] ms with at least
+  95% of valid onset intervals <= g. If none passes, use 300 ms and report
+  failure of the 95% target. Confirm visually before freezing.
+rationale: >-
+  Full Development count (pre-specified rule, each g's common cohort, valid
+  onsets only): g=200 ms 83/88 = 94.32% (fails 95%); g=250 ms 84/87 = 96.55%
+  (passes); g=300 ms 86/87 = 98.85% (passes). 250 ms is the smallest candidate
+  meeting the pre-specified 95% criterion. Union of Development events in any
+  g's common cohort (129 events, 90 valid onsets) gives the same conclusion
+  (94.4% / 96.7% / 98.9%). Margin is small: two further exceedances at 250 ms
+  would have fallen below 95%.
+limitations:
+  onset_detection_failures: >-
+    39 of 129 Development common-cohort events (30%) had no valid DWT onset
+    ('onset_missing') and were excluded from the 95% calculation, as the
+    pre-specified rule counts valid onsets only. Failures are concentrated in
+    S219 (20 of 26 events) and S210 (14 of 25); these subjects are therefore
+    under-represented in the g selection.
+  events_exceeding_g_star: >-
+    Three valid-onset Development events have R - onset > 250 ms:
+    116_164994 (272.2 ms), 116_302281 (286.1 ms), 219_365144 (338.9 ms).
+    For these events g_star = 250 ms does not guarantee that the QRS complex is
+    not cut by the analysis boundary. More generally, per protocol P§1, g
+    mitigates but does not guarantee elimination of QRS boundary cutting.
+    The 219_365144 onset may be a mis-delineation (marker shortly after the
+    preceding beat); not adjudicated.
+waveform_review:
+  performed: true
+  scope: "6 pages, 35 Development events (outputs/development/waveform_check/)"
+  correction: >-
+    The earlier review text stated that the green onset markers lay after the
+    250 ms boundary in all inspected plots. This is corrected: all three events
+    exceeding 250 ms (116_164994, 116_302281, 219_365144) were included in the
+    figures (page_06.png), and in those panels the onset marker lies before
+    (left of) the 250 ms boundary. Also, the 200/250/300 ms boundary lines were
+    drawn in the same colour (left to right: 300, 250, 200 ms), which limited
+    visual discrimination. Record 219 shows baseline wander in some segments;
+    detected onsets there are not asserted to be clinically exact QRS onsets.
+delineation_procedure: >-
+  NeuroKit2 ecg_delineate(method='dwt') for QRS onset, with version and
+  preprocessing parameters as recorded in locked_config.yaml; use
+  Development records only for g selection.
+waveform_inspection_performed: true
+dev_audit_sha256: "622b8004151dd48cac8a46bb0bfd76ddc2d261a38b33dfd5b4e4ab622d5d5776"
+config_hash: "a8af0552929dcb439e735dc8c28bb4b135d4bf509e1aedd92f74ea5239ece647"
+code_hash: "683f4559efa4533d14a07d25b282210068d798c8f167fe0dfbef0848afeefa8b"
+run_id: "20261031T201150Z_a8af0552"

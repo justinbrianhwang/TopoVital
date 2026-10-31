@@ -1,0 +1,10 @@
+# g_star decision record (template). Completed by the principal investigator from Development results only.
+# freeze-stage0 accepts it only when every field is filled and the Development audit SHA256 matches.
+# The decision actually used for the freeze is configs/g_decision_reviewed.yaml.
+g_star: null                         # one of 200 | 250 | 300 (ms)
+decided_by: null                     # name and role of the decision maker
+decision_procedure: null             # pre-specified decision procedure from the protocol
+rationale: null                      # Development per-candidate counts and waveform review
+delineation_procedure: null          # fixed QRS-onset delineation (version/parameters)
+waveform_inspection_performed: null  # true only if actually performed
+dev_audit_sha256: null               # SHA256 of outputs/development/event_audit_dev.parquet

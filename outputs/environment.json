@@ -1,0 +1,89 @@
+{
+  "collected_utc": "2026-10-31T18:19:54Z",
+  "os": {
+    "system": "Windows",
+    "release": "11",
+    "version": "10.0.26300",
+    "machine": "AMD64"
+  },
+  "python": {
+    "version": "3.14.4 (tags/v3.14.4:23116f9, Apr  7 2026, 14:10:54) [MSC v.1944 64 bit (AMD64)]",
+    "executable": "C:\\Users\\<user>\\Desktop\\Coding\\TDA\\TopoVital\\.venv\\Scripts\\python.exe",
+    "implementation": "CPython"
+  },
+  "cpu": {
+    "physical_cores": 10,
+    "logical_cores": 12,
+    "processor": "Intel64 Family 6 Model 154 Stepping 4, GenuineIntel"
+  },
+  "memory_bytes": {
+    "total": 34015707136,
+    "available": 10417065984
+  },
+  "disk_bytes_at_project": {
+    "total": 1023124959232,
+    "free": 369328562176
+  },
+  "packages": {
+    "numpy": {
+      "import_ok": true,
+      "version": "2.5.4"
+    },
+    "scipy": {
+      "import_ok": true,
+      "version": "1.18.1"
+    },
+    "pandas": {
+      "import_ok": true,
+      "version": "2.3.3"
+    },
+    "pyarrow": {
+      "import_ok": true,
+      "version": "26.0.0"
+    },
+    "PyYAML": {
+      "import_ok": true,
+      "version": "6.0.3"
+    },
+    "wfdb": {
+      "import_ok": true,
+      "version": "4.3.1"
+    },
+    "neurokit2": {
+      "import_ok": true,
+      "version": "0.2.13"
+    },
+    "matplotlib": {
+      "import_ok": true,
+      "version": "3.11.2"
+    },
+    "psutil": {
+      "import_ok": true,
+      "version": "7.2.2"
+    },
+    "pytest": {
+      "import_ok": true,
+      "version": "9.2.0"
+    },
+    "gudhi": {
+      "import_ok": true,
+      "version": "3.13.0"
+    },
+    "scikit-learn": {
+      "import_ok": true,
+      "version": "1.9.1"
+    }
+  },
+  "execution_resource_settings": {
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "NUMEXPR_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1"
+  },
+  "gpu_optional_probe": {
+    "nvidia_smi_found": false,
+    "gpus": [],
+    "required": false
+  }
+}

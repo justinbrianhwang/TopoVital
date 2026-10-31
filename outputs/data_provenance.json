@@ -1,0 +1,18 @@
+{
+  "mitdb": {
+    "zip_sha256": "47b26926927c11bd9174154d367c811afc1b186f650f8a205931ca8c520f0a87",
+    "files_listed": 704,
+    "mismatches": [],
+    "newly_extracted": 0,
+    "n_records_file": 48,
+    "license": "Open Data Commons Attribution License v1.0 (PhysioNet page; see input_checksums.csv)"
+  },
+  "nstdb": {
+    "zip_sha256": "14a38a740c0a5f80eeec7e4352d7e0569cb3ca9692f7d0360b19342e1fa25332",
+    "files_listed": 97,
+    "mismatches": [],
+    "newly_extracted": 0,
+    "n_records_file": 15,
+    "license": "Open Data Commons Attribution License v1.0 (PhysioNet page; see input_checksums.csv)"
+  }
+}

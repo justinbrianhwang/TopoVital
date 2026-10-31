@@ -1,0 +1,22 @@
+g_ms,subject_id,E_s_common,E_s_regime2,split,note
+250,S100,1,1,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S101,0,0,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S106,4,4,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S108,0,0,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S109,0,0,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S112,0,0,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S114,18,18,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S117,0,0,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S119,11,10,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S122,0,0,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S124,0,0,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S200,1,1,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S201,12,12,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S203,7,7,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S205,10,10,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S207,0,0,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S209,0,0,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S212,0,0,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S223,8,8,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S228,8,8,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run
+250,S230,1,1,test,recovery: aggregated read-only from event_audit_test.parquet after pipeline summary step crashed (Dev-only onset coverage code ran on Test); Test not re-run

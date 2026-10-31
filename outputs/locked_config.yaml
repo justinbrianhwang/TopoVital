@@ -1,0 +1,221 @@
+stage0_freeze_status: frozen
+g_star: 250
+generated_utc: '2026-10-31T20:35:47Z'
+stage0_config_hash: cc93aeb40222dae9e03e5a9467d0fc002243b2f4ffbedd6dd85a4b6d1c279767
+source_config_hash: a8af0552929dcb439e735dc8c28bb4b135d4bf509e1aedd92f74ea5239ece647
+code_hash: 683f4559efa4533d14a07d25b282210068d798c8f167fe0dfbef0848afeefa8b
+freeze_record:
+  frozen_utc: '2026-10-31T20:35:47Z'
+  decision_file: configs/g_decision_reviewed.yaml
+  decision_sha256: b136ff474c5abc2fa5966976cf57d417c7f11923f663ec37d01765540538ff31
+  decision:
+    g_star: 250
+    decided_by: Sunjun Hwang, Principal Investigator / Research Lead
+    approval_date: '2026-10-31'
+    decision_procedure: On Development only, compute R-peak minus detected QRS-onset
+      for valid delineations; choose the smallest g in [200, 250, 300] ms with at
+      least 95% of valid onset intervals <= g. If none passes, use 300 ms and report
+      failure of the 95% target. Confirm visually before freezing.
+    rationale: 'Full Development count (pre-specified rule, each g''s common cohort,
+      valid onsets only): g=200 ms 83/88 = 94.32% (fails 95%); g=250 ms 84/87 = 96.55%
+      (passes); g=300 ms 86/87 = 98.85% (passes). 250 ms is the smallest candidate
+      meeting the pre-specified 95% criterion. Union of Development events in any
+      g''s common cohort (129 events, 90 valid onsets) gives the same conclusion (94.4%
+      / 96.7% / 98.9%). Margin is small: two further exceedances at 250 ms would have
+      fallen below 95%.'
+    limitations:
+      onset_detection_failures: 39 of 129 Development common-cohort events (30%) had
+        no valid DWT onset ('onset_missing') and were excluded from the 95% calculation,
+        as the pre-specified rule counts valid onsets only. Failures are concentrated
+        in S219 (20 of 26 events) and S210 (14 of 25); these subjects are therefore
+        under-represented in the g selection.
+      events_exceeding_g_star: 'Three valid-onset Development events have R - onset
+        > 250 ms: 116_164994 (272.2 ms), 116_302281 (286.1 ms), 219_365144 (338.9
+        ms). For these events g_star = 250 ms does not guarantee that the QRS complex
+        is not cut by the analysis boundary. More generally, per protocol P§1, g mitigates
+        but does not guarantee elimination of QRS boundary cutting. The 219_365144
+        onset may be a mis-delineation (marker shortly after the preceding beat);
+        not adjudicated.'
+    waveform_review:
+      performed: true
+      scope: 6 pages, 35 Development events (outputs/development/waveform_check/)
+      correction: 'The earlier review text stated that the green onset markers lay
+        after the 250 ms boundary in all inspected plots. This is corrected: all three
+        events exceeding 250 ms (116_164994, 116_302281, 219_365144) were included
+        in the figures (page_06.png), and in those panels the onset marker lies before
+        (left of) the 250 ms boundary. Also, the 200/250/300 ms boundary lines were
+        drawn in the same colour (left to right: 300, 250, 200 ms), which limited
+        visual discrimination. Record 219 shows baseline wander in some segments;
+        detected onsets there are not asserted to be clinically exact QRS onsets.'
+    delineation_procedure: NeuroKit2 ecg_delineate(method='dwt') for QRS onset, with
+      version and preprocessing parameters as recorded in locked_config.yaml; use
+      Development records only for g selection.
+    waveform_inspection_performed: true
+    dev_audit_sha256: 622b8004151dd48cac8a46bb0bfd76ddc2d261a38b33dfd5b4e4ab622d5d5776
+    config_hash: a8af0552929dcb439e735dc8c28bb4b135d4bf509e1aedd92f74ea5239ece647
+    code_hash: 683f4559efa4533d14a07d25b282210068d798c8f167fe0dfbef0848afeefa8b
+    run_id: 20261031T201150Z_a8af0552
+  amendments:
+  - id: AM-01
+    date: '2026-10-31'
+    change: decided_by romanized from the Hangul+romanized form to 'Sunjun Hwang,
+      Principal Investigator / Research Lead'; absolute local decision_file path replaced
+      by the repository-relative path. No change to g_star, stage0 settings, config
+      hash, code hash or any result.
+    original_decision_sha256: d6da7ea0f810a9b155fd7e94284fccf36d9bcf3c59906f199caf5dbdc1c48f87
+    amended_decision_sha256: b136ff474c5abc2fa5966976cf57d417c7f11923f663ec37d01765540538ff31
+blocking_reasons: []
+stage0:
+  protocol:
+    name: TopoVital Experimental Protocol
+    version: '1.3'
+    stage: Stage 0 Freeze
+    source_document: topovital/TopoVital_Experimental_Protocol_v1.3_Stage0_Freeze.md
+    source_document_sha256: 9da3011c7bce677882c24b04775f8913e4dab04a2442bf4fda3786a8858612e6
+  data:
+    extract_dir: data/raw
+    mitdb:
+      zip: data/mitdb-1.0.0.zip
+      root: mit-bih-arrhythmia-database-1.0.0
+      version: 1.0.0
+      url: https://physionet.org/content/mitdb/1.0.0/
+      license: Open Data Commons Attribution License v1.0 (PhysioNet page; see input_checksums.csv)
+    nstdb:
+      zip: data/mit-bih-noise-stress-test-database-1.0.0.zip
+      root: mit-bih-noise-stress-test-database-1.0.0
+      version: 1.0.0
+      url: https://physionet.org/content/nstdb/1.0.0/
+      license: Open Data Commons Attribution License v1.0 (PhysioNet page; see input_checksums.csv)
+      noise_records:
+      - bw
+      - ma
+      - em
+  cohort:
+    expected_records: 48
+    expected_subjects: 47
+    same_subject_groups:
+    - - '201'
+      - '202'
+    excluded_records:
+    - '102'
+    - '104'
+    - '107'
+    - '217'
+    expected_after_exclusion:
+      records: 44
+      subjects: 43
+    lead_name: MLII
+    fs_expected: 360
+  split:
+    n_development_subjects: 22
+    n_test_subjects: 21
+    unit: subject_group
+    ordering: subject_id_ascending
+    seed: 20261031
+    stratification: pvc_candidate_count_3strata
+    strata_definition: 'subject-level count of step-1 ''V'' candidates (g-independent):
+      zero (=0) / low (1..median) / high (>median), median taken over subjects with
+      count>=1. Per-stratum Development quota = floor(n_s*22/43) plus largest-remainder
+      allocation (ties: stratum order zero, low, high).'
+  time:
+    g_candidates_ms:
+    - 200
+    - 250
+    - 300
+    half_window_s: 5
+    window_s: 10
+    ms_to_samples_rounding: round_half_up
+    interval_convention: '[start, end)'
+    g_star_ms: 250
+  events:
+    target_beat_symbol: V
+    pre_half_beat_rule: all beat annotations in [start, boundary) are 'N'; non-beat
+      annotations ignored
+    post_half_rule: 'beat annotations in [boundary, end): exactly one ''V'' (the target)
+      and all others ''N'''
+    overlap_resolution: per record, chronological; keep earlier event; drop an event
+      whose start < previous kept end + 10 s
+    min_separation_s: 10
+  quality:
+    saturation:
+      consecutive_samples: 3
+      digital_low: 0
+      digital_high: 2047
+      header_mismatch_policy: use 0/2047 as written; record diagnostics only
+      apply_to:
+      - pre
+      - post
+    iqr:
+      definition: IQR of MLII physical signal (mV) over pre-window [start, boundary)
+      percentile_method: linear
+      threshold: 0.0001
+    bsqi:
+      match_tolerance_ms: 150
+      one_to_one: true
+      detectors:
+      - wfdb.processing.xqrs_detect
+      - neurokit2.ecg_peaks(method='pantompkins1985')
+      bandpass_hz:
+      - 0.5
+      - 40
+      filter: butterworth order 4, SOS
+      filter_phase: zero_phase_sosfiltfilt
+      detector_context: pre_window_only
+      zero_denominator_value: 0
+      threshold: 0.8
+      post_window_filter: false
+      sensitivity_full_window: true
+      tie_rule: sorted two-pointer, earliest-first
+    signal_quality_annotations: '''~'' subtype -1 (U: signal loss/unreadable) state
+      overlapping the post-window excludes a PVC event; overlapping any part of a
+      normal window excludes it'
+  normal_matching:
+    rr_tolerance_frac: 0.15
+    same_subject: true
+    without_replacement: true
+    non_overlapping: true
+    cross_record_allowed: same subject only (201/202); within-record candidates preferred
+    temporal_order_rule: process PVC events chronologically; choose nearest in time
+      (|start diff|); ties -> earlier; cross-record (201/202 only) ranked by earliest
+      start
+    tie_break: earlier
+    lookback_constraint: a normal candidate window [start, end) must not intersect
+      any Stage-0 PVC event's occupied interval [start - 60 s, end) (after overlap
+      removal, same g) nor any already selected normal window [start, end)
+    lookback_s: 60
+    normal_lookback_s: 0
+    candidate_grid_step_s: 1
+    candidate_criteria: 'pre: all beats N, no saturation, IQR>=1e-4 mV, bSQI>=0.8;
+      post: all beats N, no saturation; no ''~'' U state in window'
+  template:
+    lookback_s: 60
+    min_normal_beats: 10
+    extract_window_ms:
+    - -250
+    - 450
+    normal_beat_symbols:
+    - N
+    tail_handling: Stage 0 checks eligibility only; projection tails per P§3 (endpoint
+      20 ms isoelectric means / cosine crossfade) are implemented in the Regime 2
+      stage
+  noise:
+    development_block:
+    - 0
+    - 325000
+    test_block:
+    - 325000
+    - 650000
+downstream_pending:
+  note: Stage 0 freeze does not freeze these. To be decided by the protocol's Development
+    procedures in later stages.
+  embedding: null
+  N_pt: null
+  r_max: null
+  max_dimension: null
+  persistence_image: null
+  classifier: null
+  decision_threshold: null
+  ph_backend_reference: gudhi (brief §12)
+execution_resources:
+  n_jobs: 1
+  blas_threads: 1

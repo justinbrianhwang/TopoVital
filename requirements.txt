@@ -1,0 +1,14 @@
+# Direct dependencies (exact installed versions: requirements.lock.txt)
+numpy
+scipy
+pandas
+pyarrow
+PyYAML
+wfdb
+neurokit2
+matplotlib
+psutil
+pytest
+# later PH / classification stages (not used in Stage 0)
+gudhi
+scikit-learn

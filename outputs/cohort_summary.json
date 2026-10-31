@@ -1,0 +1,56 @@
+{
+  "n_source_records": 48,
+  "n_source_subjects": 47,
+  "n_cohort_records": 44,
+  "n_cohort_subjects": 43,
+  "n_step1_pvc_candidates": 6903,
+  "event_list_sha256": "191f135d4603cf2b3c5c340ed9a75e821ece1ed6c0bfecb1a7ff12960887f035",
+  "records_mlii_not_index0": [
+    "114"
+  ],
+  "records_mlii_absent": [
+    "102",
+    "104"
+  ],
+  "records_samples_at_adc_bounds": [
+    "116"
+  ],
+  "n_samples_outside_adc_range_total": 0,
+  "noise_annotation_subtypes": {
+    "-1": 8,
+    "0": 246,
+    "1": 89,
+    "2": 176,
+    "3": 97
+  },
+  "non_beat_symbols_seen": [
+    "!",
+    "\"",
+    "+",
+    "[",
+    "]",
+    "x",
+    "|",
+    "~"
+  ],
+  "beat_symbols_seen": [
+    "/",
+    "A",
+    "E",
+    "F",
+    "J",
+    "L",
+    "N",
+    "Q",
+    "R",
+    "S",
+    "V",
+    "a",
+    "e",
+    "f",
+    "j"
+  ],
+  "config_hash": "a5fe07782a652669dc078dfdd3a0044c3671d61de14d1b060b9ff9ed1466627a",
+  "code_hash": "e9bbe9600c13bab3accf799f2e226726cfd95c4f1b9b6ebbdb8e68f83f20040b",
+  "run_id": "20261031T194846Z_a5fe0778"
+}

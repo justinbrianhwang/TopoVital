@@ -1,0 +1,4 @@
+noise_record,fs,sig_len,sig_names,fmt,adc_gain,duration_s,fs_matches_expected,dev_block,test_block,block_status
+bw,360,650000,noise1|noise2,212|212,200.0|200.0,1805.5555555555557,True,,,pending:noise blocks
+ma,360,650000,noise1|noise2,212|212,200.0|200.0,1805.5555555555557,True,,,pending:noise blocks
+em,360,650000,noise1|noise2,212|212,200.0|200.0,1805.5555555555557,True,,,pending:noise blocks

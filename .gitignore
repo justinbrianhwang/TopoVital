@@ -1,0 +1,25 @@
+# Raw PhysioNet data (download separately, see README)
+data/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest_tmp/
+.pytest_temp/
+
+# Pipeline cache and atomic-write temp files
+outputs/.cache/
+.*.tmp*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Research proposal / protocol / brief documents (kept local, not published)
+TopoVital_v1.3_CPU_Agent_Stage0_Prompt.md
+topovital/TopoVital_Experimental_Protocol_v1.3_Stage0_Freeze.md
+docs/

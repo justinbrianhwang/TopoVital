@@ -1,0 +1,132 @@
+# TopoVital v1.3 Stage 0 configuration.
+#
+# Source tags:
+#   [P§n]      = stated in the TopoVital Experimental Protocol v1.3, section n
+#   [brief]    = stated in the CPU execution brief for Stage 0
+#   [data]     = verified in the official PhysioNet headers/files
+#   [APPROVED] = left unspecified by the protocol; explicitly approved by the principal investigator
+#                on 2026-10-31 (outputs/implementation_decisions.md A-01..A-05)
+#   [INTERP]   = implementation reading of protocol wording, covered by bulk approval A-04
+# Any remaining null blocks the corresponding step, which then prints the reason.
+
+protocol:
+  name: TopoVital Experimental Protocol
+  version: "1.3"
+  stage: "Stage 0 Freeze"
+  source_document: topovital/TopoVital_Experimental_Protocol_v1.3_Stage0_Freeze.md
+  source_document_sha256: 9da3011c7bce677882c24b04775f8913e4dab04a2442bf4fda3786a8858612e6
+
+data:
+  extract_dir: data/raw
+  mitdb:
+    zip: data/mitdb-1.0.0.zip
+    root: mit-bih-arrhythmia-database-1.0.0
+    version: "1.0.0"
+    url: https://physionet.org/content/mitdb/1.0.0/
+    license: "Open Data Commons Attribution License v1.0 (PhysioNet page; see input_checksums.csv)"
+  nstdb:
+    zip: data/mit-bih-noise-stress-test-database-1.0.0.zip
+    root: mit-bih-noise-stress-test-database-1.0.0
+    version: "1.0.0"
+    url: https://physionet.org/content/nstdb/1.0.0/
+    license: "Open Data Commons Attribution License v1.0 (PhysioNet page; see input_checksums.csv)"
+    noise_records: [bw, ma, em]       # [P§5] raw noise only; pre-mixed ECGs (118e*, 119e*) are not used
+
+cohort:
+  expected_records: 48                # [P§1]
+  expected_subjects: 47               # [P§1]
+  same_subject_groups: [["201", "202"]]  # [P§1]
+  excluded_records: ["102", "104", "107", "217"]  # [P§1]
+  expected_after_exclusion: {records: 44, subjects: 43}  # [P§1]
+  lead_name: MLII                     # [P§1] selected by header name
+  fs_expected: 360                    # [data]
+
+split:
+  n_development_subjects: 22          # [P§1]
+  n_test_subjects: 21                 # [P§1]
+  unit: subject_group                 # [P§1]
+  ordering: subject_id_ascending      # implementation rule (D-05)
+  seed: 20261031                      # [APPROVED A-01]
+  stratification: pvc_candidate_count_3strata  # [APPROVED A-02]
+  strata_definition: >-
+    subject-level count of step-1 'V' candidates (g-independent): zero (=0) /
+    low (1..median) / high (>median), median taken over subjects with count>=1.
+    Per-stratum Development quota = floor(n_s*22/43) plus largest-remainder
+    allocation (ties: stratum order zero, low, high).
+
+time:
+  g_candidates_ms: [200, 250, 300]    # [P§1]
+  half_window_s: 5                    # [P§1] t0 = 5 s
+  window_s: 10                        # [P§1] W = 10 s
+  ms_to_samples_rounding: round_half_up  # D-03 (all candidates map exactly to integer samples)
+  interval_convention: "[start, end)" # [brief]
+
+g_selection:                          # [APPROVED A-03]
+  qrs_onset_method: "neurokit2.ecg_delineate(method='dwt'), ECG_R_Onsets"
+  delineation_context: "MLII physical signal [r_abs-5s, r_abs+5s), rpeaks = annotated beat samples in that segment"
+  rule: "smallest g whose Development common-cohort events have (r_abs - onset) <= g_samples in >= 95% of events with a valid onset; if none, 300"
+  coverage_threshold: 0.95
+  fallback_g_ms: 300
+  waveform_check: "researcher visual inspection of generated figures required before freeze"
+
+events:
+  target_beat_symbol: V               # [P§2-1]
+  pre_half_beat_rule: "all beat annotations in [start, boundary) are 'N'; non-beat annotations ignored"   # [P§2-2]
+  post_half_rule: "beat annotations in [boundary, end): exactly one 'V' (the target) and all others 'N'"  # [P§2-3] + [INTERP]
+  overlap_resolution: "per record, chronological; keep earlier event; drop an event whose start < previous kept end + 10 s"  # [P§2-4] + [INTERP]
+  min_separation_s: 10                # [P§2-4]
+
+quality:
+  saturation:
+    consecutive_samples: 3            # [P§4]
+    digital_low: 0                    # [P§4]
+    digital_high: 2047                # [P§4]
+    header_mismatch_policy: "use 0/2047 as written; record diagnostics only"  # [APPROVED A-04]
+    apply_to: [pre, post]             # [P§2-2, §2-3]
+  iqr:
+    definition: "IQR of MLII physical signal (mV) over pre-window [start, boundary)"  # [P§2-2, §4]
+    percentile_method: linear         # [APPROVED A-04] numpy default (type 7)
+    threshold: 1.0e-4                 # [P§2-2] mV, pass if IQR_pre >= threshold
+  bsqi:
+    match_tolerance_ms: 150           # [P§4]
+    one_to_one: true                  # [P§4]
+    detectors: ["wfdb.processing.xqrs_detect", "neurokit2.ecg_peaks(method='pantompkins1985')"]  # [P§4]
+    bandpass_hz: [0.5, 40]            # [P§4]
+    filter: "butterworth order 4, SOS"  # [P§4]
+    filter_phase: zero_phase_sosfiltfilt  # [APPROVED A-04] effective order 8 recorded
+    detector_context: pre_window_only  # [APPROVED A-04]
+    zero_denominator_value: 0         # [P§4]
+    threshold: 0.8                    # [P§2-2] pass if bSQI_pre >= 0.8
+    post_window_filter: false         # [P§2-3] primary analysis does not filter post bSQI
+    sensitivity_full_window: true     # [P§2] count events excluded by full-window bSQI >= 0.8
+    tie_rule: "sorted two-pointer, earliest-first"  # [APPROVED A-04]
+  signal_quality_annotations: "'~' subtype -1 (U: signal loss/unreadable) state overlapping the post-window excludes a PVC event; overlapping any part of a normal window excludes it"  # [APPROVED A-04] + [INTERP]
+
+normal_matching:
+  rr_tolerance_frac: 0.15             # [P§2-4] pre-boundary median RR within ±15%
+  same_subject: true                  # [P§2-4]
+  without_replacement: true           # [P§2-4]
+  non_overlapping: true               # [P§2-4]
+  cross_record_allowed: "same subject only (201/202); within-record candidates preferred"  # [P§2-4]
+  temporal_order_rule: "process PVC events chronologically; choose nearest in time (|start diff|); ties -> earlier; cross-record (201/202 only) ranked by earliest start"  # [P§2-4] + [INTERP]
+  tie_break: earlier                  # [P§2-4]
+  lookback_constraint: "a normal candidate window [start, end) must not intersect any Stage-0 PVC event's occupied interval [start - 60 s, end) (after overlap removal, same g) nor any already selected normal window [start, end)"  # [APPROVED A-05] 2026-10-31
+  lookback_s: 60                      # PVC occupied lookback (template lookback, P§2)
+  normal_lookback_s: 0                # [APPROVED A-05] normal windows occupy only their own 10 s
+  candidate_grid_step_s: 1            # [APPROVED A-04]
+  candidate_criteria: "pre: all beats N, no saturation, IQR>=1e-4 mV, bSQI>=0.8; post: all beats N, no saturation; no '~' U state in window"  # [APPROVED A-04]
+
+template:
+  lookback_s: 60                      # [P§2]
+  min_normal_beats: 10                # [P§2-5]
+  extract_window_ms: [-250, 450]      # [P§2], [P§3]
+  normal_beat_symbols: ["N"]          # [APPROVED A-04]
+  tail_handling: "Stage 0 checks eligibility only; projection tails per P§3 (endpoint 20 ms isoelectric means / cosine crossfade) are implemented in the Regime 2 stage"
+
+noise:
+  development_block: [0, 325000]      # [P§5] chronological first half (half-open)
+  test_block: [325000, 650000]        # [P§5] second half
+
+execution:                            # execution resources (not a scientific setting)
+  n_jobs: 1
+  blas_threads: 1
