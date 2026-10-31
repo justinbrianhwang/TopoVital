@@ -115,6 +115,11 @@ On real data the Development sweep took about 230 s with a peak RSS of about 420
 
 ## Method summary (Stage 0)
 
+<p align="center">
+  <img src="assets/figs/fig2_event_window_timing.png" width="900" alt="One 10 s analysis window: pre-window 0 to 5 s with all normal beats, analysis boundary t0 at 5 s, guard interval of 250 ms, target PVC R-peak at t0 plus g star, QRS onset between t0 and the R-peak, post-window 5 to 10 s">
+  <br><em>Figure 4. Event-window timing. The boundary t0 sits at 5 s and the target PVC R-peak at t0 + g* (250 ms), so the QRS onset falls after t0.</em>
+</p>
+
 1. **Candidates:** every `V` beat annotation on the 44 retained records. The 10 s window has its boundary at `t0 = 5 s` and the target R peak at `t0 + g`.
 2. **Pre-boundary `[0, t0)`:** all beat annotations are `N`. There must be no run of ≥ 3 samples at the digital ADC limits 0/2047. `IQR ≥ 1e-4 mV`. `bSQI ≥ 0.8`, where bSQI compares `wfdb.processing.xqrs_detect` and NeuroKit2 Pan–Tompkins detections after a 0.5–40 Hz 4th-order Butterworth band-pass (zero-phase), with greedy one-to-one matching within ±150 ms.
 3. **Post-boundary `[t0, W)`:** exactly one `V` (the target) and all other beats `N`. No saturation and no annotated signal loss.
@@ -124,13 +129,13 @@ On real data the Development sweep took about 230 s with a peak RSS of about 420
 
 <p align="center">
   <img src="assets/figs/fig4_normal_window_matching.png" width="900" alt="Normal-window matching on a 30-minute record: PVC windows occupy a 60 s lookback; candidate normal windows overlapping a lookback or a selected normal window are rejected; the matched window has the same subject, pre-window median RR within 15 percent, nearest in time">
-  <br><em>Figure 4. Normal-window matching (step 4). Schematic, not to scale.</em>
+  <br><em>Figure 5. Normal-window matching (step 4). Schematic, not to scale.</em>
 </p>
 
 ## Repository layout
 
 ```
-assets/figs/   README figures
+assets/figs/  README figures
 configs/      stage0.yaml (all Stage 0 settings), g-decision records
 topovital/    pipeline package
 tests/        unit + real-data reproducibility tests (pytest)
