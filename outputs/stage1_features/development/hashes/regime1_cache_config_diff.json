@@ -1,0 +1,35 @@
+{
+  "ledger_hash_groups": [
+    {
+      "config_hash": "3634d8958185938bf7f69001fe2470a35059da1ca04b15fa092ea4bfd16bd0b8",
+      "rows": 4428,
+      "cached_true": 0,
+      "cached_false": 4428,
+      "reconstruction_matches": [
+        "current"
+      ]
+    },
+    {
+      "config_hash": "3acff9318577261de11a903fd8d40b3205a1bdb062ff354b6b1130b1dd509c58",
+      "rows": 108,
+      "cached_true": 108,
+      "cached_false": 0,
+      "reconstruction_matches": [
+        "validation"
+      ]
+    }
+  ],
+  "current_hash": "3634d8958185938bf7f69001fe2470a35059da1ca04b15fa092ea4bfd16bd0b8",
+  "reconstructed_validation_hash": "3acff9318577261de11a903fd8d40b3205a1bdb062ff354b6b1130b1dd509c58",
+  "reproduced": {
+    "3634d8958185938bf7f69001fe2470a35059da1ca04b15fa092ea4bfd16bd0b8": true,
+    "3acff9318577261de11a903fd8d40b3205a1bdb062ff354b6b1130b1dd509c58": true
+  },
+  "differing_keys": [
+    "regime1.approved_for_full_run"
+  ],
+  "n_cached": 108,
+  "cache_keys_match": 108,
+  "cache_key_mismatches": [],
+  "conclusion": "The 108 cached jobs retain their cache keys; the two run config hashes differ only because approved_for_full_run changed from false to true."
+}

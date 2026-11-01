@@ -1,0 +1,10 @@
+{
+  "recorded_utc": "2026-10-31T23:27:32Z",
+  "purpose": "pre-run record for Development C2/C3 Regime 1 full run",
+  "regime1_config_sha256": "e682a818822dd46a10d142936f2de4fa9e37e804c29ff3e99293a656d47e6140",
+  "stage1_config_sha256": "67e1b73a1717237f1301e7c0fe74549f73fa19cc5dd2fa65e8fb209ec005eec8",
+  "run_config_hash": "3634d8958185938bf7f69001fe2470a35059da1ca04b15fa092ea4bfd16bd0b8",
+  "stage1_code_hash": "7b40c8c7bedbe193e4cb5d5eddd545baec365eafda39d3bb560cdb45a8b372fe",
+  "stage0_code_hash": "683f4559efa4533d14a07d25b282210068d798c8f167fe0dfbef0848afeefa8b",
+  "gudhi_version": "3.13.0"
+}

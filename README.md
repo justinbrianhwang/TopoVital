@@ -12,8 +12,9 @@ the **Stage 1** topological feature extraction, which is in progress on Developm
 > - **Stage 0** is complete and **frozen** with `g_star = 250 ms`. The Test split was processed exactly once with the frozen configuration.
 > - **Stage 1 (Development only):**
 >   - Clean-window persistent homology (C0/C1) is complete: 504 / 504 jobs succeeded.
->   - Regime 1 artefact injection (C2/C3, NSTDB `bw` / `ma` / `em`) is running.
-> - Test remains locked for Stage 1. Persistence images, classifiers and statistical evaluation (protocol §7) have not started.
+>   - Regime 1 artefact injection (C2/C3, NSTDB `bw` / `ma` / `em`) is complete: 4,536 / 4,536 jobs succeeded.
+> - Test remains locked for Stage 1. Regime 2/3, persistence images, classifiers and statistical evaluation (protocol §7) have not started.
+> - The authoritative progress record is [`outputs/stage1_status.yaml`](outputs/stage1_status.yaml).
 
 <p align="center">
   <img src="assets/figs/fig1_stage0_pipeline.png" width="900" alt="TopoVital Stage 0 pipeline: PhysioNet data, cohort, PVC candidates, stratified subject split, Development lane with g sweep and freeze, Test lane locked until freeze, Common cohort and Regime 2 subset">
@@ -106,7 +107,7 @@ Measured cost per VR job over the 504 C0/C1 jobs is a median wall time of 14.2 s
 
 The embedding diagnostics behind τ and m are in [`outputs/stage1_pilot/`](outputs/stage1_pilot/). That folder's `embedding_selection_PENDING.md` lists the open questions as they stood before approval; decisions B-01 to B-03 in [`outputs/implementation_decisions.md`](outputs/implementation_decisions.md) resolved them.
 
-**Regime 1 artefact injection, C2/C3** ([`configs/stage1_regime1.yaml`](configs/stage1_regime1.yaml), approvals C-01 to C-03). Running; results will be added when the run is complete and verified.
+**Regime 1 artefact injection, C2/C3** ([`configs/stage1_regime1.yaml`](configs/stage1_regime1.yaml), approvals C-01 to C-03).
 
 The run covers 126 events × 2 conditions × 3 noise types × 6 SNRs = 4,536 post-half jobs. The settings are:
 - **Noise source:** NSTDB `bw`, `ma` and `em`, channel 0, Development block `[0, 325000)` only.
@@ -116,7 +117,24 @@ The run covers 126 events × 2 conditions × 3 noise types × 6 SNRs = 4,536 pos
 - **Verification:** achieved SNR must be within 1e-3 dB of the target.
 - **Pre half:** reused from the C0/C1 results after a SHA-256 check of the input.
 
-Per-job persistence diagrams (`.npz`) are not stored in this repository; they will be archived on Zenodo.
+Results (run_id `20261031T232737Z_3634d895`):
+
+| Item | Result |
+|---|---|
+| Jobs (126 events × C2/C3 × 3 noise types × 6 SNRs) | 4,536. Each noise type × condition × SNR cell has 126 jobs |
+| Succeeded / failed | 4,536 / 0. VR, cubical and validation checks all pass |
+| Wall time (4 workers) | 17,219 s (about 4 h 47 min). Median 14.7 s per VR job; max child peak RSS 490 MB |
+| SNR check (all jobs) | 4,536 / 4,536 within tolerance. Max \|SNR error\| 1.2e-14 dB; max relative norm error 1.4e-15 |
+| Independent SNR check | Recomputed from raw MIT-BIH and NSTDB on the injected waveform for 60 random jobs, without the Stage 1 code: max \|SNR error\| 7.1e-15 dB; scale factors agree to 4.6e-15 (relative) |
+| Snippet allocation | Re-derived from the seed: 378 / 378 match. All slots lie in the Development block. No snippet is used twice. One snippet per event and noise type is shared by C2/C3 and all SNRs. C2 and C3 scale factors differ in all 2,268 pairs |
+| Cache reuse | Post half: 108 / 4,536 (2.4 %) reused from the 3-event pre-validation run. Pre half: 4,536 / 4,536 reused from C0/C1 after a SHA-256 input check, with no mismatch |
+| Test data | Not read. Neither MIT-BIH Test records nor the NSTDB Test block `[325000, 650000)` were used |
+
+The 108 reused jobs carry a different run-config hash from the rest. A normalized comparison of the two configurations shows that the only differing key is `approved_for_full_run`. That key was false during pre-validation and true for the full run; the details are in [`hashes/regime1_cache_config_diff.json`](outputs/stage1_features/development/hashes/regime1_cache_config_diff.json).
+
+The original Regime 1 ledgers contain local absolute paths and are kept out of the repository. The published copies in [`outputs/stage1_features/development/public/`](outputs/stage1_features/development/public/) replace those paths with repo-relative ones and leave every other value unchanged. Source and public SHA-256 hashes are listed in `PUBLIC_MANIFEST.json`.
+
+Per-job persistence diagrams (504 + 4,536 `.npz` files) are not stored in this repository; they will be archived on Zenodo.
 
 ## Installation
 
@@ -199,11 +217,13 @@ configs/            stage0.yaml (all Stage 0 settings), g-decision records,
                     stage1.yaml (PH settings), stage1_regime1.yaml (artefact injection)
 topovital/          Stage 0 pipeline package (frozen)
 topovital_stage1/   Stage 1 package: embedding, persistent homology, Regime 1 injection
+tools/              publication helpers: path-sanitized audit copies, cache config-hash comparison
 tests/              unit + real-data reproducibility tests (pytest); tests/stage1/ for Stage 1
 outputs/            Stage 0 deliverables: cohort_manifest.csv, event_audit*.parquet, attrition_summary.csv,
                     locked_config.yaml, implementation_decisions.md, stage0_report.md, resource_profile.csv, ...
 outputs/stage1_pilot/      embedding diagnostics and PH resource pilot (Development)
 outputs/stage1_features/   Stage 1 job ledgers and run summaries (per-job .npz diagrams archived on Zenodo)
+outputs/stage1_status.yaml Stage 1 progress record
 ```
 
 ## License and data attribution

@@ -1,6 +1,8 @@
 """Synthetic Regime 1 allocation, injection, reuse, gating, and cache checks."""
 from __future__ import annotations
 
+from copy import deepcopy
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -64,9 +66,17 @@ def test_taper_and_snr_for_each_target_with_separate_scales(cfg):
 
 
 def test_full_run_refused_without_approval(cfg):
+    cfg = deepcopy(cfg)
+    cfg["approved_for_full_run"] = False
     with pytest.raises(BlockedError, match="approved_for_full_run"):
         regime1.require_run_scope(cfg, None)
     regime1.require_run_scope(cfg, 1)
+
+
+def test_full_run_allowed_with_approval(cfg):
+    cfg = deepcopy(cfg)
+    cfg["approved_for_full_run"] = True
+    regime1.require_run_scope(cfg, None)
 
 
 def test_pre_mismatch_is_failure_and_identical_post_key_is_cached(

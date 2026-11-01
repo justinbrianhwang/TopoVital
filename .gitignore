@@ -28,3 +28,7 @@ docs/
 *.npz
 outputs/stage1_features/**/jobs/
 outputs/stage1_features/**/regime1_jobs/
+# Regime 1 original audit files contain local absolute paths; publish the sanitized copies in public/ instead
+outputs/stage1_features/development/regime1_ledger.csv
+outputs/stage1_features/development/regime1_injection_log.csv
+tools/__pycache__/

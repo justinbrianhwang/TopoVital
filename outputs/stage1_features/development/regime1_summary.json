@@ -1,0 +1,12 @@
+{
+  "total_jobs": 4536,
+  "success": 4536,
+  "failed": 0,
+  "cached": 108,
+  "total_wall_time_s": 17218.537413799997,
+  "max_child_peak_rss_mb": 490.33984375,
+  "workers_used": 4,
+  "snr_checks_passed": 4536,
+  "snr_checks_total": 4536,
+  "run_id": "20261031T232737Z_3634d895"
+}

@@ -115,3 +115,22 @@ computed separately for C2 and C3; 5 s snippets with mean removal; SNR verified 
 (< 0.001 dB); SNR ∈ {24, 18, 12, 6, 0, −6} dB; pre-half PH reused from Stage 1; only post halves computed;
 4 workers; resumable; Test locked; no Regime 2/3 or classifier. Pre-run configuration and code hashes are in
 `outputs/stage1_features/development/hashes/regime1_full_run_prerun.json`.
+
+### Regime 1 full Development run and publication (2026-11-01)
+
+- **Result:** run_id `20261031T232737Z_3634d895`, 4,536/4,536 post-half jobs succeeded and validated, 0 failed,
+  4,536/4,536 SNR checks passed, 4,536/4,536 pre-half reuses verified by SHA256, 108 jobs reused from the
+  pre-validation cache. Wall time 17,218.5 s with 4 workers; max child peak RSS 490.3 MB.
+- **Independent checks** (not using `topovital_stage1`): snippet allocation re-derived from the seed, 378/378 match;
+  SNR and scale factor recomputed from raw MIT-BIH/NSTDB for 60 random jobs, max |SNR error| 7.1e-15 dB.
+- **Cache config hash:** the 108 cached jobs carry run config hash `3acff931…`, the rest `3634d895…`. A normalized
+  flattened comparison shows the only differing key is `regime1.approved_for_full_run` (false at validation, true
+  for the full run); both hashes are reproduced exactly and all 108 cache keys match their job files
+  (`outputs/stage1_features/development/hashes/regime1_cache_config_diff.json`).
+- **P-01 Publication copies:** the original `regime1_ledger.csv` and `regime1_injection_log.csv` contain local
+  absolute paths (user name) in `job_path` and `pre_reference`. They are kept unchanged locally and are not
+  published. Public copies with repo-relative paths, all other values identical, are in
+  `outputs/stage1_features/development/public/`, with source and public SHA256 in `PUBLIC_MANIFEST.json`
+  (`tools/make_public_copies.py`). Per-job `.npz` files are not published in the repository.
+- **Status record:** `configs/stage1.yaml` is unchanged to preserve its recorded hash; current progress is recorded in
+  `outputs/stage1_status.yaml` (Regime 2/3, persistence images and classifiers not started; Test locked for Stage 1).

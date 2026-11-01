@@ -1,0 +1,66 @@
+# TopoVital Stage 1 status record.
+# configs/stage1.yaml is intentionally left unchanged (SHA256 67e1b73a...) because its hash is part of the recorded
+# run configuration. Its `pending:` block (perturbations_regimes_1_3: null, ...) predates the Regime 1 run;
+# this file is the authoritative progress record and supersedes that block.
+
+as_of_utc: "2026-11-01T14:26:17Z"
+
+stage0:
+  status: frozen
+  g_star_ms: 250
+  locked_config: outputs/locked_config.yaml
+  code_hash: 683f4559efa4533d14a07d25b282210068d798c8f167fe0dfbef0848afeefa8b
+  source_config_hash: a8af0552929dcb439e735dc8c28bb4b135d4bf509e1aedd92f74ea5239ece647
+
+stage1:
+  split: development_only           # 126 Common-cohort events, 10 subjects, g = 250 ms
+  code_hash: 7b40c8c7bedbe193e4cb5d5eddd545baec365eafda39d3bb560cdb45a8b372fe   # sha over topovital_stage1/*.py
+  configs:
+    stage1: {path: configs/stage1.yaml, sha256: 67e1b73a1717237f1301e7c0fe74549f73fa19cc5dd2fa65e8fb209ec005eec8}
+    regime1: {path: configs/stage1_regime1.yaml, sha256: e682a818822dd46a10d142936f2de4fa9e37e804c29ff3e99293a656d47e6140}
+
+  embedding_selection:
+    status: complete                # decisions B-01..B-03 (tau 28, m 5, uniform stride, unbounded r_max)
+    outputs: outputs/stage1_pilot/
+
+  clean_windows_c0_c1:
+    status: complete
+    run_id: 20261031T221258Z_0cb9ccaf
+    jobs: 504                       # 126 events x {C0, C1} x {pre, post}
+    success: 504
+    failed: 0
+    validation_ok: 504
+    outputs: outputs/stage1_features/development/{jobs_ledger.csv, per_subject_counts.csv, run_summary.json}
+
+  regime1_c2_c3:
+    status: complete                # decisions C-01..C-03
+    run_id: 20261031T232737Z_3634d895
+    run_config_hash: 3634d8958185938bf7f69001fe2470a35059da1ca04b15fa092ea4bfd16bd0b8
+    jobs: 4536                      # 126 events x {C2, C3} x {bw, ma, em} x 6 SNR, post half
+    success: 4536
+    failed: 0
+    validation_ok: 4536
+    snr_checks_passed: 4536
+    pre_half_reuse_verified: 4536
+    cached_from_prevalidation: 108  # config hash differs only in approved_for_full_run; see hashes/regime1_cache_config_diff.json
+    wall_time_s: 17218.5
+    max_child_peak_rss_mb: 490.3
+    workers: 4
+    independent_checks:
+      snippet_allocation_rederived: "378 / 378 match"
+      snr_recomputed_from_raw_data: "60 random jobs; max |SNR error| 7.1e-15 dB; max scale_a relative difference 4.6e-15"
+    outputs:
+      public_audit_copies: outputs/stage1_features/development/public/   # paths made repo-relative; see PUBLIC_MANIFEST.json
+      summaries: outputs/stage1_features/development/{snippet_allocation.csv, regime1_summary.json}
+      hashes: outputs/stage1_features/development/hashes/
+      per_job_npz: not_in_repository   # 504 + 4,536 .npz diagram files, to be archived on Zenodo
+
+  regime2: not_started
+  regime3: not_started
+  persistence_image: not_started
+  classifier: not_started
+  decision_threshold: not_started
+
+test_split:
+  stage0: processed_once_with_frozen_config   # 2026-10-31, run_id 20261031T203554Z_a8af0552 (deviation F-02)
+  stage1: locked                              # no Stage 1 computation has read Test records or the NSTDB Test block

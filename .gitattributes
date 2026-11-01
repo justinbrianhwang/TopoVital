@@ -1,0 +1,2 @@
+# Keep published Stage 1 result files byte-identical to their recorded SHA256 (no line-ending conversion)
+outputs/stage1_features/** -text
