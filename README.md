@@ -1,15 +1,19 @@
 # TopoVital
 
-**Reproducible, CPU-only Stage 0 pipeline for topological analysis of premature ventricular contractions (PVCs) in ECG.**
+**Reproducible, CPU-only pipeline for topological analysis of premature ventricular contractions (PVCs) in ECG.**
 
 TopoVital studies whether topological data analysis (persistent homology) can separate a PVC-induced perturbation from
 noise, baseline wander, clipping and time-warping artefacts in short ECG windows. This repository implements and
 documents **Stage 0** of the experimental protocol: cohort construction, event eligibility, normal-window matching,
-guard-interval (`g_star`) selection on Development data only, and a locked Development/Test gate.
+guard-interval (`g_star`) selection on Development data only, and a locked Development/Test gate. It also contains
+the **Stage 1** topological feature extraction, which is in progress on Development data.
 
-> **Status (2026-10-31):** Stage 0 is complete and **frozen** with `g_star = 250 ms`.
-> The Test split was processed exactly once with the frozen configuration.
-> Persistent-homology features, classifiers and statistical evaluation (protocol §6–§7) are later stages and are not part of this repository yet.
+> **Status (2026-11-01):**
+> - **Stage 0** is complete and **frozen** with `g_star = 250 ms`. The Test split was processed exactly once with the frozen configuration.
+> - **Stage 1 (Development only):**
+>   - Clean-window persistent homology (C0/C1) is complete: 504 / 504 jobs succeeded.
+>   - Regime 1 artefact injection (C2/C3, NSTDB `bw` / `ma` / `em`) is running.
+> - Test remains locked for Stage 1. Persistence images, classifiers and statistical evaluation (protocol §7) have not started.
 
 <p align="center">
   <img src="assets/figs/fig1_stage0_pipeline.png" width="900" alt="TopoVital Stage 0 pipeline: PhysioNet data, cohort, PVC candidates, stratified subject split, Development lane with g sweep and freeze, Test lane locked until freeze, Common cohort and Regime 2 subset">
@@ -66,8 +70,47 @@ Split: subject-grouped and stratified by step-1 PVC count (strata 0 / 1–88 / >
 - 39 of 129 Development events (30 %) had no valid DWT onset; these are concentrated in S219 and S210.
 - Three events exceed 250 ms (116_164994, 116_302281, 219_365144). `g` mitigates QRS boundary cutting but does not guarantee to eliminate it.
 - Events are concentrated in a few subjects.
+- The Test run wrote its event audit and then failed in the Development-only `g` coverage summary step. The audit was not regenerated. Test attrition tables were aggregated read-only from that audit (deviation F-02). The bug is left unfixed in the frozen code because fixing it would change the frozen `code_hash`.
 
 Full numbers are in [`outputs/attrition_summary.csv`](outputs/attrition_summary.csv) and [`outputs/stage0_report.md`](outputs/stage0_report.md). Every decision and deviation is logged in [`outputs/implementation_decisions.md`](outputs/implementation_decisions.md).
+
+## Stage 1 results (Development, in progress)
+
+Stage 1 uses the 126 Development Common-cohort events at `g = 250 ms`. C1 is the PVC window and C0 its matched normal window. Each window is split at `t0` into a pre half and a post half, and each half is analysed separately.
+
+**Settings** ([`configs/stage1.yaml`](configs/stage1.yaml), approvals B-01 to B-03):
+
+| Setting | Value |
+|---|---|
+| Normalization | `(x − median(pre)) / IQR(pre)`, using pre-window statistics for both halves |
+| Delay embedding | τ = 28 samples (pooled median of AMI first minima), m = 5 (FNN < 5 %). Never crosses `t0` |
+| Point cloud | 300 delay vectors per half, uniform stride |
+| Vietoris–Rips | GUDHI 3.13.0, full complex (no `r_max`), `max_dimension = 2`, H0 and H1 |
+| Cubical | Sublevel PH of `x` and superlevel PH of `−x` |
+
+**Clean windows, C0/C1** ([`outputs/stage1_features/development/`](outputs/stage1_features/development/)):
+
+| Item | Result |
+|---|---|
+| Jobs (126 events × 2 conditions × 2 halves) | 504 |
+| Succeeded / failed | 504 / 0 |
+| Validation | All jobs pass. VR has 4,500,250 simplices, 1 essential H0 bar and 0 essential H1 bars. Cubical essential births equal `min(x)` and `−max(x)` |
+| Wall time (4 workers) | 1,797 s |
+| Max child peak RSS | 490 MB |
+
+The embedding diagnostics behind τ and m are in [`outputs/stage1_pilot/`](outputs/stage1_pilot/). That folder's `embedding_selection_PENDING.md` lists the open questions as they stood before approval; decisions B-01 to B-03 in [`outputs/implementation_decisions.md`](outputs/implementation_decisions.md) resolved them.
+
+**Regime 1 artefact injection, C2/C3** ([`configs/stage1_regime1.yaml`](configs/stage1_regime1.yaml), approvals C-01 to C-03). Running; results will be added when the run is complete and verified.
+
+The run covers 126 events × 2 conditions × 3 noise types × 6 SNRs = 4,536 post-half jobs. The settings are:
+- **Noise source:** NSTDB `bw`, `ma` and `em`, channel 0, Development block `[0, 325000)` only.
+- **Snippets:** 5 s, mean-removed. Each event gets one snippet per noise type from 180 non-overlapping slots by a seeded permutation (seed `[20261031, noise_index]`). C2 and C3 share that snippet across all SNRs.
+- **Onset taper:** 100 ms raised-cosine ramp at `t0`.
+- **Scaling:** `a = ‖s_ref‖ / ‖n‖ · 10^(−SNR/20)` with `s_ref = post − median(pre)`, at SNR ∈ {24, 18, 12, 6, 0, −6} dB.
+- **Verification:** achieved SNR must be within 1e-3 dB of the target.
+- **Pre half:** reused from the C0/C1 results after a SHA-256 check of the input.
+
+Per-job persistence diagrams (`.npz`) are not stored in this repository; they will be archived on Zenodo.
 
 ## Installation
 
@@ -113,6 +156,16 @@ python -m pytest -q
 A command that is not allowed in the current state exits with code `3` and prints the reason. For example, a Test run before freezing, or any Test `g` sweep. Each command appends a row to `outputs/resource_profile.csv`.
 On real data the Development sweep took about 230 s with a peak RSS of about 420 MB on a 10-core / 32 GB CPU machine.
 
+**Stage 1** (Development only; refuses to run unless Stage 0 is frozen with `g_star = 250` and the approved parameters are unchanged):
+
+```bash
+python -m topovital_stage1 pilot [--only embedding|ph]   # embedding diagnostics + PH resource pilot
+python -m topovital_stage1 features --workers 4          # C0/C1 persistent homology (resumable, cached per job)
+python -m topovital_stage1 regime1 --workers 4           # C2/C3 Regime 1 injection (needs approved_for_full_run)
+```
+
+`--events N` runs a deterministic subset with one event per subject. Every VR job runs in a monitored child process with a 6 GB abort limit. Each job is cached by the SHA-256 of its normalized input, parameters, GUDHI version and Stage 1 code hash, so an interrupted run resumes without recomputation.
+
 ## Method summary (Stage 0)
 
 <p align="center">
@@ -136,11 +189,15 @@ On real data the Development sweep took about 230 s with a peak RSS of about 420
 
 ```
 assets/figs/  README figures
-configs/      stage0.yaml (all Stage 0 settings), g-decision records
-topovital/    pipeline package
-tests/        unit + real-data reproducibility tests (pytest)
-outputs/      Stage 0 deliverables: cohort_manifest.csv, event_audit*.parquet, attrition_summary.csv,
-              locked_config.yaml, implementation_decisions.md, stage0_report.md, resource_profile.csv, ...
+configs/            stage0.yaml (all Stage 0 settings), g-decision records,
+                    stage1.yaml (PH settings), stage1_regime1.yaml (artefact injection)
+topovital/          Stage 0 pipeline package (frozen)
+topovital_stage1/   Stage 1 package: embedding, persistent homology, Regime 1 injection
+tests/              unit + real-data reproducibility tests (pytest); tests/stage1/ for Stage 1
+outputs/            Stage 0 deliverables: cohort_manifest.csv, event_audit*.parquet, attrition_summary.csv,
+                    locked_config.yaml, implementation_decisions.md, stage0_report.md, resource_profile.csv, ...
+outputs/stage1_pilot/      embedding diagnostics and PH resource pilot (Development)
+outputs/stage1_features/   Stage 1 job ledgers and run summaries (per-job .npz diagrams archived on Zenodo)
 ```
 
 ## License and data attribution

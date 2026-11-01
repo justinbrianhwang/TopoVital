@@ -1,0 +1,44 @@
+# TopoVital Stage 1 configuration (topological features). Stage 0 is frozen separately
+# (outputs/locked_config.yaml, g_star = 250 ms) and is not modified by this file.
+#
+# Source tags: [P§n] protocol section n · [APPROVED B-0n] approved by the principal investigator on
+# 2026-10-31 after the Development pilot (outputs/stage1_pilot/) · null = pending, blocks the step.
+
+stage0_lock: outputs/locked_config.yaml
+
+normalization:                        # [P§6]
+  reference: pre_window               # common pre-window median and IQR for both halves
+  percentile_method: linear
+
+embedding:                            # [P§6] AMI first minimum + FNN < 5 %, selected on Development
+  tau_samples: 28                     # [APPROVED B-01] pooled median of 497 valid Dev segments (C0/C1, pre/post)
+  m: 5                                # [APPROVED B-01] mode of 504 Dev segments (444 of 504)
+  ami_method: "neurokit2.complexity_delay(delay_max=100, method='fraser1986'), library defaults"
+  fnn: {rtol: 15, atol: 2, threshold: 0.05, candidates: [3, 5, 7]}
+  fallback: {tau_samples: 10, m: 5}   # [P§6] not triggered: criteria did not fail at Development level
+  never_cross_t0: true                # [P§6] each half embedded separately
+
+vietoris_rips:                        # [P§6]
+  n_points_per_half: 300
+  subsample_rule: uniform_stride      # [APPROVED B-02] np.linspace(0, n-1, 300).round()
+  r_max: null_means_unbounded         # [APPROVED B-03] full Rips complex, no truncation
+  r_max_value: .inf
+  max_dimension: 2                    # create_simplex_tree(max_dimension=2)
+  backend: gudhi                      # reference implementation (brief §12)
+  censoring_note: "with unbounded r_max, H0 has exactly one essential bar and no right-censored bars"
+
+cubical:                              # [P§6]
+  sublevel: x
+  superlevel: -x
+  essential_births: ["min(x)", "-max(x)"]
+
+pilot_resource_reference:             # measured, Development pilot 2026-10-31
+  vr_job_wall_time_s_mean: 13.5
+  vr_job_peak_rss_mb: 488
+  vr_num_simplices: 4500250
+
+pending:                              # later stages; not selected yet
+  persistence_image: null
+  perturbations_regimes_1_3: null     # [P§5] definitions exist; implementation not started
+  classifier: null
+  decision_threshold: null

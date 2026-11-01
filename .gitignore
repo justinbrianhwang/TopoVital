@@ -23,3 +23,8 @@ Thumbs.db
 TopoVital_v1.3_CPU_Agent_Stage0_Prompt.md
 topovital/TopoVital_Experimental_Protocol_v1.3_Stage0_Freeze.md
 docs/
+
+# Stage 1 per-job persistence diagrams (large; archived on Zenodo instead)
+*.npz
+outputs/stage1_features/**/jobs/
+outputs/stage1_features/**/regime1_jobs/

@@ -83,3 +83,35 @@ later re-verified unchanged (event list SHA256 `191f135d…f035`).
   `outputs/stage0_freeze_record.json` and `outputs/locked_config.yaml`. The decision-file SHA256 changed from
   `d6da7ea0f810…` to `b136ff474c5a…`; both values are recorded in the `amendments` field of the freeze record.
   g_star, the stage-0 settings, `stage0_config_hash`, `code_hash` and all results are unchanged, and the Test gate still validates.
+
+## Stage 1 — Development pilot and approved feature settings (2026-10-31)
+The pilot (`python -m topovital_stage1 pilot`, run_id `20261031T212507Z_2dcb6336`) used the 126 Development
+common-cohort events at g* = 250 ms only; no Test data were read. Stage 0 code was not modified (`code_hash` unchanged).
+Embedding diagnostics over 504 segments: τ (AMI first minimum) was found in 497 segments, with median 28 samples
+(IQR 18–51). m (FNN < 5 %) was 5 in 444 segments, 7 in 46 and 3 in 14. VR resource pilot (20 jobs, 300 points,
+max_dimension 2, no r_max): all succeeded, 4,500,250 simplices per job, 13.5 s mean, about 488 MB peak RSS per job.
+
+| ID | Protocol basis | Approved decision |
+|---|---|---|
+| B-01 | §6 τ/m "selected on Development"; aggregation unspecified | τ = 28 samples (pooled median of valid Dev segments), m = 5 (mode). NeuroKit2 `fraser1986` AMI with library defaults; FNN Rtol 15, Atol 2, < 5 %, m ∈ {3, 5, 7} |
+| B-02 | §6 "subsample 300 points per half"; method unspecified | Uniform stride `np.linspace(0, n−1, 300).round()` |
+| B-03 | §6 "fix maximum filtration radius"; rule unspecified | No truncation (full Rips complex). Cost measured as acceptable; no right-censored bars, and exactly one essential H0 bar |
+
+Settings are recorded in `configs/stage1.yaml`.
+
+## Stage 1 — Regime 1 artefact injection, Development (2026-10-31)
+Validation on 3 representative Development event pairs (run_id `20261031T225455Z_3acff931`): 108/108 post-half
+jobs succeeded. SNR error was at most 8.9e-15 dB and the relative norm error at most 7.3e-16. Pre-half reuse was
+verified by SHA256 in 108/108 jobs, and no snippet was reused. The full run was then approved.
+
+| ID | Item (not specified by the protocol) | Approved decision |
+|---|---|---|
+| C-01 | NSTDB noise channel | `noise1` (channel 0); the nst convention adds noise signal i to ECG signal i, and MLII is signal 0 for all Development records |
+| C-02 | Snippet allocation | Per noise type, 180 non-overlapping 1,800-sample slots in the Development block [0, 325000), permuted with `default_rng([20261031, type_index])` and assigned without replacement to the 126 event pairs sorted by event_id. The same snippet is used for C2/C3 and for all SNR levels of a pair |
+| C-03 | Onset | Raised-cosine ramp over 100 ms (36 samples) at t0. The hard-onset (η = 0) variant is excluded from this run |
+
+Principles set by the principal investigator: NSTDB bw/ma/em with the Development/Test block split; scale factors
+computed separately for C2 and C3; 5 s snippets with mean removal; SNR verified on the injected waveform
+(< 0.001 dB); SNR ∈ {24, 18, 12, 6, 0, −6} dB; pre-half PH reused from Stage 1; only post halves computed;
+4 workers; resumable; Test locked; no Regime 2/3 or classifier. Pre-run configuration and code hashes are in
+`outputs/stage1_features/development/hashes/regime1_full_run_prerun.json`.

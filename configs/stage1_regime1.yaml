@@ -1,0 +1,34 @@
+# TopoVital Stage 1 — Regime 1 artefact injection (C2 = A(N), C3 = A(V)), Development only.
+# Source tags: [P§5] protocol · [PI] principle stated by the principal investigator on 2026-10-31 ·
+# [APPROVED C-0n] not specified by the protocol; approved by the principal investigator on 2026-10-31.
+# The full Development run is refused unless approved_for_full_run is true.
+
+approved_for_full_run: true   # approved by the principal investigator 2026-10-31 (decisions C-01..C-03)
+
+noise:
+  database: nstdb 1.0.0
+  types: [bw, ma, em]                 # [P§5][PI-1]
+  channel: 0                          # [APPROVED C-01] noise1; nst convention adds noise signal i to ECG signal i, MLII is signal 0 for all Dev records
+  development_block: [0, 325000]      # [P§5] chronological first half (half-open); Test block [325000, 650000) never read
+  snippet_samples: 1800               # [PI-3] 5 s
+  allocation: non_overlapping_grid_seeded_permutation   # [APPROVED C-02]
+  grid_step_samples: 1800             # 180 slots: starts 0, 1800, ..., 322200
+  allocation_seed: 20261031           # rng = numpy.random.default_rng([20261031, type_index]); events sorted by event_id
+  same_snippet_for_c2_c3_and_all_snr: true   # [PI-2]
+  mean_removal: true                  # [P§5][PI-3] subtract the snippet's own sample mean
+  onset_taper: {kind: raised_cosine_ramp, duration_ms: 100, samples: 36, position: post_window_start}  # [P§5][PI-3][APPROVED C-03]
+  hard_onset_variant: not_computed    # [APPROVED C-03] protocol also lists eta = 0; not part of this step
+
+injection:                            # [P§5]
+  target: post_window_only            # pre-window identical to C0/C1
+  snr_db: [24, 18, 12, 6, 0, -6]      # [PI-5]
+  s_ref: "un-injected post-window (physical mV) minus the pre-window median"
+  scale: "a = (||s_ref||_2 / ||n_eta||_2) * 10^(-SNR/20), computed separately for C2 (normal) and C3 (PVC)"  # [PI-2]
+  definition_note: "window-energy SNR; differs from the official nst SNR definition"
+  reject_if_noise_norm_below: 1.0e-6
+  tolerance: {abs_snr_db: 1.0e-3, rel_norm: 1.0e-5}   # [P§5][PI-4]
+
+features:
+  reuse_pre_half_from: outputs/stage1_features/development   # [PI-6]
+  compute_post_half_only: true        # [PI-9]
+  parameters_from: configs/stage1.yaml   # tau 28, m 5, 300 points, full VR, max_dimension 2, cubical

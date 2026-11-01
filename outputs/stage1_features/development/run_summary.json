@@ -1,0 +1,10 @@
+{
+  "total_jobs": 504,
+  "success": 504,
+  "failed": 0,
+  "cached": 32,
+  "total_wall_time_s": 1796.605678400003,
+  "max_child_peak_rss_mb": 490.046875,
+  "workers_used": 4,
+  "run_id": "20261031T221258Z_0cb9ccaf"
+}
