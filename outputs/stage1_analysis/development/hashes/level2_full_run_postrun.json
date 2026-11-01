@@ -1,0 +1,24 @@
+{
+  "recorded_utc": "2026-11-01T17:52:07Z",
+  "purpose": "post-run record for Level 2 full nested LOSO (Development)",
+  "analysis_code_hash": "74b3cf9c4ef38b9e33e001a848f2fbfd0221db441409560f3e30a35c6d56f83a",
+  "files": {
+    "topovital_analysis/__init__.py": "3d41dde13a7e5b2d5ce62472406d59d2aa197caaaeabec36f62bb072d751ca65",
+    "topovital_analysis/__main__.py": "68acbbd6742083dee566c363be14bb66979210a4f8ca60ce4beda484399a8cb7",
+    "topovital_analysis/distances.py": "3387829c8639d6b87753526724441bd9a4c3a9e4d4d42dc2ab78e0dbb2648625",
+    "topovital_analysis/level1.py": "dee81e81ff8d76702a0c06b48378233c50f79c5c176582a56cae007fb5a5823b",
+    "topovital_analysis/level2.py": "be9808fd2af994391b20ca9845ff23420895b9bfcf1e7063c390a41df97b6d28",
+    "topovital_analysis/level2_metrics.py": "c2bf4f2c6597423a703650ac41dab55d3e5aa30f10ad7300119f8128a2a2c642",
+    "topovital_analysis/persistence_images.py": "4b43b7a1f3df1a25f4cb77ac20643107fee9d8ac6570a6d8f91c9fc7ce50ed90",
+    "topovital_analysis/stats.py": "423a7d187746519da284c0eab13d6aeda30de5f6276544ec40808d32086117e4",
+    "configs/stage1_analysis.yaml": "f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b",
+    "configs/stage1.yaml": "67e1b73a1717237f1301e7c0fe74549f73fa19cc5dd2fa65e8fb209ec005eec8",
+    "configs/stage1_regime1.yaml": "e682a818822dd46a10d142936f2de4fa9e37e804c29ff3e99293a656d47e6140",
+    "configs/stage0.yaml": "449d4096bb108ce834cc2fa334c38f1b94044fbf86dfc290e88e82f7e49fc4b7"
+  },
+  "same_file_set": true,
+  "code_hash_matches_prerun": true,
+  "code_hash_matches_run_summary": true,
+  "config_sha_matches_run_summary": true,
+  "all_files_match_prerun": true
+}

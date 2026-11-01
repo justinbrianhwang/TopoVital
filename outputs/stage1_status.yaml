@@ -3,7 +3,7 @@
 # run configuration. Its `pending:` block (perturbations_regimes_1_3: null, ...) predates the Regime 1 run;
 # this file is the authoritative progress record and supersedes that block.
 
-as_of_utc: "2026-11-01T16:11:16Z"
+as_of_utc: "2026-11-01T18:30:00Z"
 
 stage0:
   status: frozen
@@ -64,8 +64,20 @@ stage1:
     outputs: outputs/stage1_analysis/development/level1/
 
   analysis_level2_persistence_images:
-    status: full_nested_loso_running   # approved 2026-11-01; pre-run hashes in outputs/stage1_analysis/development/hashes/
+    status: complete                # C1 vs C2 training; approved 2026-11-01
+    outer_folds: "10 / 10 succeeded"
+    fits: 4533                      # 4,080 outer + 453 final Development selection; 0 convergence warnings
+    wall_time_s: 6079.8
+    peak_rss_mb: 870.5
+    analysis_code_hash: 74b3cf9c4ef38b9e33e001a848f2fbfd0221db441409560f3e30a35c6d56f83a   # identical before and after the run
+    config_sha256: f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b
+    hashes: outputs/stage1_analysis/development/hashes/{level2_full_run_prerun.json, level2_full_run_postrun.json, level2_outputs.sha256}
+    outputs: outputs/stage1_analysis/development/level2/   # final_models/ not in repository
     pilot: outputs/stage1_analysis/development/level2_pilot/   # one outer fold, before the final-selection step was added
+    limitation: "C1/C2 training confounds PVC presence with artefact absence; C0 FPR 0.68 and C3 sensitivity 0.59 (pi_plus_amplitude)"
+
+  analysis_factorial_c0_c3:
+    status: design_in_preparation   # no full training before design approval
 
   regime2: not_started
   regime3: not_started

@@ -160,3 +160,12 @@ outer-fold performance. Test is not used.
 max relative difference 6.6e-11), and AUROC matched sklearn (max difference 1.7e-16). The run's configuration copy
 (`level1/config_at_run.yaml`, SHA256 `ba2079a0…`) and per-file code hashes (`level1/code_files_at_run.sha256`) are
 kept because the configuration later received the Level 2 approval keys and `__main__.py` gained the `level2` command.
+
+**Level 2 full nested LOSO** (2026-11-01, C1 vs C2 training): 10 / 10 outer folds, 4,533 fits (4,080 outer + 453
+final Development selection), 0 convergence warnings, 6,080 s, peak 870 MB. Analysis code hash `74b3cf9c…` and
+configuration SHA256 `f3c61b65…` were identical before and after the run (`hashes/level2_full_run_prerun.json`,
+`hashes/level2_full_run_postrun.json`); output file hashes are in `hashes/level2_outputs.sha256`. Final Development
+selection (separate LOSO over all 10 subjects): `pi_only` and `pi_plus_amplitude` R = 10, σ = 2 px, C = 0.1;
+`amplitude_only` C = 10. Outer-fold `pi_plus_amplitude`: C1/C2 AUROC 0.92, C0 FPR 0.68, C3 sensitivity 0.59
+(subject-equal). Limitation: in C1/C2 training PVC presence and artefact absence are perfectly aligned, so the AUROC
+does not measure PVC detection; a factorial C0–C3 design is in preparation. `final_models/` is not published.

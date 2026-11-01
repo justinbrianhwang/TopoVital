@@ -13,7 +13,7 @@ the **Stage 1** topological feature extraction, which is in progress on Developm
 > - **Stage 1 (Development only):**
 >   - Clean-window persistent homology (C0/C1) is complete: 504 / 504 jobs succeeded.
 >   - Regime 1 artefact injection (C2/C3, NSTDB `bw` / `ma` / `em`) is complete: 4,536 / 4,536 jobs succeeded.
-> - **Level 1 analysis** (pre/post PH distances, Development) is complete. **Level 2** (persistence images with nested subject-level CV, Development) is running.
+> - **Level 1** (pre/post PH distances) and **Level 2** (persistence images with nested subject-level CV) analyses on Development are complete. The Level 2 C1-vs-C2 result has a known confound (see its limitation note).
 > - Test remains locked for Stage 1. Regime 2/3, Level 3 and Test evaluation have not started.
 > - The authoritative progress record is [`outputs/stage1_status.yaml`](outputs/stage1_status.yaml).
 
@@ -169,6 +169,60 @@ Settings are in [`configs/stage1_analysis.yaml`](configs/stage1_analysis.yaml) (
 - **Conclusion:** a single pre/post distance is not sufficient. This result is about this representation only and is not a verdict on PH as a whole.
 
 Outputs are in [`outputs/stage1_analysis/development/level1/`](outputs/stage1_analysis/development/level1/): per-window distances, summaries, C1/C2 separation per cell and per subject, and the hera cross-check.
+
+## Stage 1 analysis, Level 2: persistence images, nested LOSO (Development)
+
+Settings are in [`configs/stage1_analysis.yaml`](configs/stage1_analysis.yaml) (approvals L-01 to L-06).
+
+**Method**
+- **Features:** persistence images in (birth, persistence) coordinates for the four representations, built for the pre half, the post half and their difference. VR H0 images are 1-D because all its births are 0. Nine amplitude features (min, max, range for pre, post and post − pre) are also used.
+- **PI region:** estimated in every training fold from the training subjects' C0/C1 halves only. Points outside the region are not clipped.
+- **Models:** `pi_only`, `amplitude_only` and `pi_plus_amplitude`, each an L2 logistic regression.
+- **Training task:** C1 (PVC, clean) against C2 (normal window with artefact, all 18 noise × SNR cells) in one model.
+  - Each subject has equal total weight; within a subject, C1 and C2 have equal total weight.
+  - The weights passed to the fit are rescaled to mean 1.
+- **Cross-validation:** nested leave-one-subject-out with 10 outer folds.
+  - The inner LOSO selects the PI resolution (10, 20), σ (1, 2 pixels) and C (0.001–10).
+  - The operating threshold gives 90 % subject-equal C1 sensitivity on the inner out-of-fold scores of the training subjects.
+  - The held-out subject is never used for the PI region, standardization, selection or threshold.
+- **Final Development setting:** chosen by a separate LOSO over all 10 subjects, never from outer-fold results.
+- **Uncertainty:** subject-cluster bootstrap with 1,000 resamples. MMD is exploratory only.
+
+**Run:** 10 / 10 outer folds succeeded with 4,533 fits and 0 convergence warnings. The run took 6,080 s with a peak of 870 MB. Code and configuration hashes were identical before and after the run ([`hashes/`](outputs/stage1_analysis/development/hashes/)).
+
+**Results (outer folds, subject-equal, 95 % bootstrap CI, all 18 cells):**
+
+| Model | C1 vs C2 AUROC | C1 sensitivity | C2 FPR | **C0 FPR** | **C3 sensitivity** |
+|---|---|---|---|---|---|
+| `amplitude_only` | 0.58 [0.41, 0.75] | 0.92 | 0.89 | 0.96 | 0.82 |
+| `pi_only` | 0.84 [0.78, 0.90] | 0.90 | 0.45 [0.31, 0.56] | 0.85 [0.64, 0.98] | 0.56 [0.42, 0.68] |
+| `pi_plus_amplitude` | **0.92** [0.87, 0.96] | 0.83 [0.60, 0.99] | 0.38 [0.22, 0.53] | **0.68** [0.44, 0.88] | **0.59** [0.42, 0.72] |
+
+- **C2 FPR by SNR:** for `pi_plus_amplitude`, it is 0.52–0.67 at 24–18 dB, 0.17–0.29 at 0 to −6 dB for bw/em, and 0.00–0.03 for ma.
+- **C3 sensitivity by SNR:** 0.80–0.85 at 24–18 dB, and 0.02–0.50 at 0 to −6 dB. For ma at 0 to −6 dB it is 0.02–0.09.
+- **Final Development setting (separate LOSO):**
+  - `pi_only`: R = 10, σ = 2 px, C = 0.1
+  - `pi_plus_amplitude`: R = 10, σ = 2 px, C = 0.1
+  - `amplitude_only`: C = 10
+
+> **Limitation: the high C1/C2 AUROC is not PVC detection performance.**
+> In the C1-vs-C2 training task, PVC presence and artefact presence are perfectly anti-aligned: every positive is a clean PVC, and every negative is a normal window with artefact. A model can therefore score well by detecting "no artefact".
+> The other conditions show this:
+> - Clean normal windows (C0) are flagged as PVC at a rate of 0.68–0.96.
+> - PVCs with artefact (C3) are detected at only 0.59, and almost never at 0 dB or below.
+> - AUROC rises as SNR falls (up to 1.00 for ma at −6 dB), the opposite of what a PVC detector should show.
+>
+> These are descriptive Development results. A factorial C0–C3 design (PVC vs non-PVC, with and without artefact) is being prepared to address this.
+
+Outputs are in [`outputs/stage1_analysis/development/level2/`](outputs/stage1_analysis/development/level2/):
+- out-of-fold predictions;
+- window-level, subject-level and per-subject metrics;
+- bootstrap CIs;
+- inner and final selection records;
+- PI regions and out-of-range logs;
+- exploratory MMD.
+
+The one-fold pilot is in `level2_pilot/`. Fitted model arrays (`final_models/`) are not stored in the repository.
 
 ## Installation
 
