@@ -1,0 +1,59 @@
+# TopoVital Stage 1 factorial C0–C3 PVC detection analysis, Development only.
+# Source tags: [APPROVED F-0n] approved by the principal investigator on 2026-11-01 · [L-0n] inherited unchanged
+# from configs/stage1_analysis.yaml (Level 2) · [PI] condition stated by the principal investigator with the approval.
+# Inputs are read-only: Stage 0 frozen files, configs/stage1*.yaml, the 5,040 Stage 1 .npz job files, and the
+# published Level 2 outputs (outputs/stage1_analysis/development/level2/, hashes in hashes/level2_outputs.sha256).
+# Everything not listed here (inputs, representations, PI construction, PI candidates, C grid, classifier,
+# standardization, tie break, bootstrap) is taken from configs/stage1_analysis.yaml so the two analyses differ
+# only in the training task, weights, selection metric and threshold rules.
+
+inherit_from: configs/stage1_analysis.yaml   # sections scope, inputs, level2.persistence_image, level2.features, level2.classifier.c_grid, level2.cross_validation.tie_break, level2.reporting.bootstrap
+
+status: approved_full_nested_loso  # [PI] full 10-fold run approved 2026-11-01 after the S105 pilot
+approved_for_full_run: true
+pilot_outer_subject: S105            # same outer fold as the Level 2 pilot
+
+training:
+  positive: [C1, C3]                 # PVC
+  negative: [C0, C2]                 # non-PVC
+  windows: all_c0_c3                 # 126 C0 + 126 C1 + 2,268 C2 + 2,268 C3
+  weights:                           # [APPROVED F-01]
+    subject: equal
+    condition: {C0: 0.25, C1: 0.25, C2: 0.25, C3: 0.25}   # within subject
+    cell: equal_within_c2_c3         # 18 noise type x SNR cells
+    event: equal_within_cell         # C0/C1: equal per event; C2/C3: equal per event within each cell
+    fit_weight_scale: mean_1         # [L-06] applied immediately before fit
+    checks: [total_sums, subject_sums, condition_sums, cell_sums, event_sums, weighted_cov_pvc_artefact_zero, fit_mean_one]   # per fold
+
+selection:                           # [APPROVED F-02]
+  metric: stratified_auroc
+  definition: "per subject: 0.5 * AUROC(C1 vs C0) + 0.5 * mean over 18 cells of AUROC(C3 vs C2 in the cell); then subject-equal mean"
+  scope: nested_loso_inner_only      # held-out subject never used for PI region, standardization, selection or threshold
+
+thresholds:                          # [APPROVED F-03] both from training subjects' inner out-of-fold predictions
+  primary:
+    name: weighted_pvc_sensitivity_90
+    definition: "largest t with subject-equal mean of [0.5 * sens(C1) + 0.5 * mean over 18 cells of sens(C3 in cell)] >= 0.90"
+    target: 0.90
+  secondary:
+    name: c1_sensitivity_90          # identical rule to Level 2
+    definition: "largest t with subject-equal mean of sens(C1) >= 0.90"
+    target: 0.90
+
+reporting:
+  aggregation: [window_level, subject_equal_weight]
+  scopes: [overall, protocol_9_cell, each_noise_type_x_snr_cell]
+  discrimination: [stratified_auroc, auroc_c1_vs_c0, auroc_c3_vs_c2, weighted_pooled_auroc]
+  rates_per_threshold: [c1_sensitivity, c3_sensitivity, c0_fpr, c2_fpr, weighted_balanced_accuracy]
+  artefact_dependence:               # [APPROVED F-04]
+    auroc: ["AUROC(C2 vs C0) (non-PVC)", "AUROC(C3 vs C1) (PVC)"]
+    paired_score_change: ["f(C2) - f(C0) per normal event and cell", "f(C3) - f(C1) per PVC event and cell"]
+    rate_change: ["FPR(C2) - FPR(C0)", "sens(C3) - sens(C1)"]
+  comparison_with_level2:            # [APPROVED F-04]
+    source: outputs/stage1_analysis/development/level2/oof_predictions.parquet   # read-only, hash-verified
+    matching: same_subject_event_condition_cell
+    bootstrap: subject_cluster_paired   # identical resample indices for both models
+    rule: "robustness is not claimed from AUROC near 0.5 alone; it requires lower C0/C2 FPR together with maintained or improved C1/C3 sensitivity"   # [PI]
+  bootstrap: {kind: subject_cluster, resamples: 1000, seed: 20261031}
+  mmd: {use: exploratory_descriptive_only, pairs: ["C3 vs C2 per cell", "C1 vs C0"], p_values: none}
+  undefined_metrics: not_evaluable_with_reason

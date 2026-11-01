@@ -1,0 +1,107 @@
+{
+  "pi_only": {
+    "resolution": 10,
+    "sigma_pixels": 1.0,
+    "C": 0.001,
+    "cv_score": 0.7424684027717074,
+    "threshold_primary": 0.23274301023884042,
+    "threshold_c1": 0.249674295853042,
+    "pi_regions": {
+      "cub_sub_h0": [
+        -3.283555900621118,
+        3.5000000000000004,
+        0.0,
+        14.74206971677557
+      ],
+      "cub_super_h0": [
+        -12.1,
+        2.5526859318996613,
+        0.0,
+        13.889094202898569
+      ],
+      "vr_h0": [
+        null,
+        null,
+        0.0,
+        3.7016495679707115
+      ],
+      "vr_h1": [
+        0.09993110574449174,
+        5.566593354222683,
+        0.0,
+        0.8585639298264993
+      ]
+    },
+    "selection_basis": "separate LOSO over all Development subjects; outer-fold results not used"
+  },
+  "amplitude_only": {
+    "resolution": null,
+    "sigma_pixels": null,
+    "C": 0.01,
+    "cv_score": 0.6540325513039121,
+    "threshold_primary": 0.23802550676455145,
+    "threshold_c1": 0.23802550676455145,
+    "pi_regions": {
+      "cub_sub_h0": [
+        -3.283555900621118,
+        3.5000000000000004,
+        0.0,
+        14.74206971677557
+      ],
+      "cub_super_h0": [
+        -12.1,
+        2.5526859318996613,
+        0.0,
+        13.889094202898569
+      ],
+      "vr_h0": [
+        null,
+        null,
+        0.0,
+        3.7016495679707115
+      ],
+      "vr_h1": [
+        0.09993110574449174,
+        5.566593354222683,
+        0.0,
+        0.8585639298264993
+      ]
+    },
+    "selection_basis": "separate LOSO over all Development subjects; outer-fold results not used"
+  },
+  "pi_plus_amplitude": {
+    "resolution": 10,
+    "sigma_pixels": 1.0,
+    "C": 0.01,
+    "cv_score": 0.7716342565019918,
+    "threshold_primary": 0.21523529596419946,
+    "threshold_c1": 0.23783292255276683,
+    "pi_regions": {
+      "cub_sub_h0": [
+        -3.283555900621118,
+        3.5000000000000004,
+        0.0,
+        14.74206971677557
+      ],
+      "cub_super_h0": [
+        -12.1,
+        2.5526859318996613,
+        0.0,
+        13.889094202898569
+      ],
+      "vr_h0": [
+        null,
+        null,
+        0.0,
+        3.7016495679707115
+      ],
+      "vr_h1": [
+        0.09993110574449174,
+        5.566593354222683,
+        0.0,
+        0.8585639298264993
+      ]
+    },
+    "selection_basis": "separate LOSO over all Development subjects; outer-fold results not used"
+  }
+}

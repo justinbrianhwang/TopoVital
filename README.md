@@ -14,6 +14,7 @@ the **Stage 1** topological feature extraction, which is in progress on Developm
 >   - Clean-window persistent homology (C0/C1) is complete: 504 / 504 jobs succeeded.
 >   - Regime 1 artefact injection (C2/C3, NSTDB `bw` / `ma` / `em`) is complete: 4,536 / 4,536 jobs succeeded.
 > - **Level 1** (pre/post PH distances) and **Level 2** (persistence images with nested subject-level CV) analyses on Development are complete. The Level 2 C1-vs-C2 result has a known confound (see its limitation note).
+> - The **factorial C0–C3** analysis on Development is complete. It reduced the score dependence on artefact, but improved PVC detection was not shown.
 > - Test remains locked for Stage 1. Regime 2/3, Level 3 and Test evaluation have not started.
 > - The authoritative progress record is [`outputs/stage1_status.yaml`](outputs/stage1_status.yaml).
 
@@ -212,7 +213,7 @@ Settings are in [`configs/stage1_analysis.yaml`](configs/stage1_analysis.yaml) (
 > - PVCs with artefact (C3) are detected at only 0.59, and almost never at 0 dB or below.
 > - AUROC rises as SNR falls (up to 1.00 for ma at −6 dB), the opposite of what a PVC detector should show.
 >
-> These are descriptive Development results. A factorial C0–C3 design (PVC vs non-PVC, with and without artefact) is being prepared to address this.
+> These are descriptive Development results. The factorial C0–C3 analysis below addresses this confound.
 
 Outputs are in [`outputs/stage1_analysis/development/level2/`](outputs/stage1_analysis/development/level2/):
 - out-of-fold predictions;
@@ -223,6 +224,94 @@ Outputs are in [`outputs/stage1_analysis/development/level2/`](outputs/stage1_an
 - exploratory MMD.
 
 The one-fold pilot is in `level2_pilot/`. Fitted model arrays (`final_models/`) are not stored in the repository.
+
+## Stage 1 analysis, factorial C0–C3 training (Development)
+
+This analysis addresses the Level 2 confound. Settings are in [`configs/stage1_factorial.yaml`](configs/stage1_factorial.yaml) (approvals F-01 to F-04). Everything else (inputs, persistence images, PI candidates, C grid, classifier, tie break, bootstrap) is inherited unchanged from Level 2.
+
+**Method**
+- **Training task:** PVC (C1, C3) against non-PVC (C0, C2), all four conditions in one model.
+- **Weights (F-01):**
+  - Each subject has equal total weight, and within a subject each condition has weight 1/4.
+  - Within C2 and C3, the 18 noise × SNR cells have equal weight, and events are equal within each cell.
+  - The weighted covariance between PVC presence and artefact presence is therefore 0. This was checked in all 111 training folds (|cov| ≤ 1.3e-17).
+- **Selection metric (F-02):** stratified AUROC.
+  - For each subject: 0.5 · AUROC(C1 vs C0) + 0.5 · mean over the 18 cells of AUROC(C3 vs C2).
+  - The subject values are then averaged with equal weight.
+  - This compares PVC with non-PVC only under the same artefact condition.
+- **Thresholds (F-03):** both are set on the training subjects' inner out-of-fold scores.
+  - **Primary:** 90 % subject-equal mean of [0.5 · C1 sensitivity + 0.5 · cell-mean C3 sensitivity].
+  - **C1 rule:** 90 % C1 sensitivity. This is the Level 2 rule.
+- **Artefact dependence (F-04):**
+  - AUROC(C2 vs C0) and AUROC(C3 vs C1).
+  - Paired score changes f(C2) − f(C0) and f(C3) − f(C1) on the same event and cell.
+  - FPR(C2) − FPR(C0) and sensitivity(C3) − sensitivity(C1).
+- **Cross-validation:** nested LOSO with 10 outer folds. PI parameters and C are selected in the inner LOSO only.
+
+**Run:**
+- 10 / 10 outer folds succeeded, with 4,533 fits and 0 convergence warnings.
+- The run took 9,547 s with a peak of 1,091 MB.
+- Code hash `6fd12bd5…` and configuration hashes were identical before and after the run ([`hashes/`](outputs/stage1_analysis/development/hashes/)).
+- Level 1 and Level 2 outputs and the NPZ inputs were verified unchanged after the run.
+- The bootstrap used 1,000 subject-cluster resamples, with 0 non-evaluable resamples.
+
+**Results (primary threshold, outer folds, subject-equal, 95 % bootstrap CI, all 18 cells):**
+
+| Model | **Stratified AUROC** | C1 sensitivity | **C3 sensitivity** | C0 FPR | **C2 FPR** | Weighted balanced accuracy |
+|---|---|---|---|---|---|---|
+| `amplitude_only` | 0.62 [0.41, 0.82] | 0.90 [0.70, 1.00] | 0.91 [0.73, 1.00] | 0.95 [0.85, 1.00] | 0.96 [0.87, 1.00] | 0.48 [0.43, 0.50] |
+| `pi_only` | 0.52 [0.37, 0.67] | 0.69 [0.43, 0.92] | 0.77 [0.61, 0.93] | 0.64 [0.40, 0.87] | 0.66 [0.45, 0.85] | 0.54 [0.48, 0.62] |
+| `pi_plus_amplitude` | **0.70** [0.60, 0.81] | 0.80 [0.60, 0.95] | **0.82** [0.66, 0.94] | 0.79 [0.57, 0.95] | **0.74** [0.55, 0.89] | 0.52 [0.45, 0.62] |
+
+- **`pi_plus_amplitude` components:** AUROC(C1 vs C0) is 0.72 and AUROC(C3 vs C2) is 0.68.
+- **Across the 18 cells:** C2 FPR ranges 0.62–0.79 and C3 sensitivity 0.71–0.87, with little trend over SNR.
+- **Per subject:** stratified AUROC ranges 0.46–0.95 (SD 0.18). The four subjects with 25–29 events lie between 0.58 and 0.70.
+- **Final Development setting (separate LOSO):**
+  - `pi_only`: R = 10, σ = 1 px, C = 0.001
+  - `pi_plus_amplitude`: R = 10, σ = 1 px, C = 0.01
+  - `amplitude_only`: C = 0.01
+
+**Comparison with Level 2 at the same threshold rule.**
+Both models use the C1 rule (90 % C1 sensitivity) and are compared on the same subject, event, condition and cell. The CI is from a paired subject-cluster bootstrap that uses identical resamples for both models. Results at the primary threshold are not compared with Level 2.
+
+| `pi_plus_amplitude`, C1 rule, subject-equal | Level 2 | Factorial | Difference [95 % CI] |
+|---|---|---|---|
+| AUROC(C2 vs C0), artefact dependence | 0.22 | 0.53 | +0.32 [0.26, 0.37] |
+| AUROC(C3 vs C1), artefact dependence | 0.23 | 0.50 | +0.27 [0.22, 0.32] |
+| Paired score change f(C2) − f(C0) | −0.18 | 0.02 | +0.20 [0.13, 0.28] |
+| Paired score change f(C3) − f(C1) | −0.31 | 0.00 | +0.31 [0.24, 0.36] |
+| FPR(C2) − FPR(C0) | −0.30 | −0.01 | +0.28 [0.19, 0.39] |
+| Sensitivity(C3) − sensitivity(C1) | −0.25 | 0.01 | +0.26 [0.17, 0.34] |
+| C0 FPR | 0.680 | 0.720 | +0.04 [−0.12, 0.20] |
+| C2 FPR | 0.383 | 0.707 | +0.32 [0.16, 0.47] |
+| C1 sensitivity | 0.832 | 0.796 | −0.04 [−0.30, 0.20] |
+| C3 sensitivity | 0.585 | 0.809 | +0.22 [0.03, 0.39] |
+| Stratified AUROC | 0.78 | 0.70 | −0.08 [−0.16, −0.01] |
+| Weighted balanced accuracy | 0.59 | 0.54 | −0.04 [−0.12, 0.04] |
+
+`pi_only` moves the same way. `amplitude_only` remains artefact-dependent: its AUROC(C2 vs C0) changes from 0.31 to 0.72, and |AUROC − 0.5| does not decrease. All three models are in `comparison_with_level2.csv`.
+
+> **Conclusion: score dependence on artefact decreased, but improved PVC detection was not shown.**
+> - **Artefact dependence fell.** For the PI models, the scores of the same event with and without artefact now differ by about 0, and artefact no longer moves the FPR or the sensitivity.
+> - **PVC detection did not improve.** The required pattern was lower C0/C2 FPR together with maintained or improved C1/C3 sensitivity. Instead:
+>   - C3 sensitivity rose, but C2 FPR rose by a similar amount.
+>   - C0 FPR did not fall.
+>   - Weighted balanced accuracy stayed at about 0.54.
+> - **Discrimination within the same artefact condition fell** (stratified AUROC 0.78 → 0.70). Part of the Level 2 signal was genuine PVC information that the artefact-invariant model gave up.
+>
+> These are descriptive Development results. Robustness is not claimed.
+
+Outputs are in [`outputs/stage1_analysis/development/factorial/`](outputs/stage1_analysis/development/factorial/). Output hashes are in `hashes/factorial_outputs.sha256`.
+- out-of-fold predictions;
+- window-level, subject-level and per-subject metrics for both threshold rules and all cells;
+- bootstrap CIs;
+- the Level 2 comparison;
+- the weight check for every fold;
+- inner and final selection records;
+- PI regions and out-of-range logs;
+- exploratory MMD.
+
+The one-fold pilot (outer S105) is in `factorial_pilot/`. `final_models/` is not stored in the repository.
 
 ## Installation
 
@@ -279,6 +368,7 @@ python -m topovital_stage1 regime1 --workers 4           # C2/C3 Regime 1 inject
 ```bash
 python -m topovital_analysis level1 --workers 4 [--events N]   # Level 1 pre/post PH distances
 python -m topovital_analysis level2 [--pilot]                  # Level 2 persistence images, nested LOSO (needs approval)
+python -m topovital_analysis factorial [--pilot]               # factorial C0-C3 training, nested LOSO (needs approval)
 ```
 
 `--events N` runs a deterministic subset with one event per subject. Every VR job runs in a monitored child process with a 6 GB abort limit. Each job is cached by the SHA-256 of its normalized input, parameters, GUDHI version and Stage 1 code hash, so an interrupted run resumes without recomputation.
@@ -308,9 +398,10 @@ python -m topovital_analysis level2 [--pilot]                  # Level 2 persist
 assets/figs/  README figures
 configs/            stage0.yaml (all Stage 0 settings), g-decision records,
                     stage1.yaml (PH settings), stage1_regime1.yaml (artefact injection)
+                    stage1_analysis.yaml (Level 1/2), stage1_factorial.yaml (factorial C0-C3)
 topovital/          Stage 0 pipeline package (frozen)
 topovital_stage1/   Stage 1 package: embedding, persistent homology, Regime 1 injection
-topovital_analysis/ Stage 1 analysis: Level 1 PH distances, Level 2 persistence images and nested LOSO
+topovital_analysis/ Stage 1 analysis: Level 1 PH distances, Level 2 persistence images, factorial C0-C3, nested LOSO
 tools/              publication helpers: path-sanitized audit copies, cache config-hash comparison
 tests/              unit + real-data reproducibility tests (pytest); tests/stage1/ for Stage 1
 outputs/            Stage 0 deliverables: cohort_manifest.csv, event_audit*.parquet, attrition_summary.csv,
@@ -318,7 +409,7 @@ outputs/            Stage 0 deliverables: cohort_manifest.csv, event_audit*.parq
 outputs/stage1_pilot/      embedding diagnostics and PH resource pilot (Development)
 outputs/stage1_features/   Stage 1 job ledgers and run summaries (per-job .npz diagrams archived on Zenodo)
 outputs/stage1_status.yaml Stage 1 progress record
-outputs/stage1_analysis/   Level 1 / Level 2 analysis outputs (Development)
+outputs/stage1_analysis/   Level 1 / Level 2 / factorial analysis outputs (Development)
 ```
 
 ## License and data attribution

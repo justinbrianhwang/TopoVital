@@ -1,0 +1,32 @@
+{
+  "fits": 408,
+  "outer_fits": 408,
+  "final_selection_fits": 0,
+  "stage_times_s": {
+    "features": 80.27127949999704,
+    "metrics": 29.08079560000624,
+    "comparison": 2.6261461000103736,
+    "final": 0.0,
+    "inner_cv_per_fold": {
+      "S105": 521.2666796999983
+    },
+    "outer_fit": {
+      "S105": 9.881466299993917
+    }
+  },
+  "fit_time_median_s": 0.6227393000081065,
+  "fit_time_min_s": 0.005661299990606494,
+  "fit_time_max_s": 3.51976470000227,
+  "fit_time_total_s": 351.1554088000994,
+  "convergence_warnings": 0,
+  "wall_time_s": 643.3067115000013,
+  "peak_rss_mb": 866.5390625,
+  "config_sha256": {
+    "stage1_factorial.yaml": "2d60bb0d3b7ff75ad3ea789a29c26326c69ada15d02ec3a5a2da7ffca5498a59",
+    "stage1_analysis.yaml": "f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b"
+  },
+  "code_hash": "6fd12bd54df38dbbb1ded73b2d13073395f9f1742ddc6e3aa9f84c8b8ca2038a",
+  "outer_folds": 1,
+  "windows": 4788,
+  "pilot": true
+}

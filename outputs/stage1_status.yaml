@@ -3,7 +3,7 @@
 # run configuration. Its `pending:` block (perturbations_regimes_1_3: null, ...) predates the Regime 1 run;
 # this file is the authoritative progress record and supersedes that block.
 
-as_of_utc: "2026-11-01T18:30:00Z"
+as_of_utc: "2026-11-01T23:30:00Z"
 
 stage0:
   status: frozen
@@ -77,11 +77,26 @@ stage1:
     limitation: "C1/C2 training confounds PVC presence with artefact absence; C0 FPR 0.68 and C3 sensitivity 0.59 (pi_plus_amplitude)"
 
   analysis_factorial_c0_c3:
-    status: design_in_preparation   # no full training before design approval
+    status: complete                # PVC (C1, C3) vs non-PVC (C0, C2); approvals F-01..F-04, configs/stage1_factorial.yaml
+    outer_folds: "10 / 10 succeeded"
+    fits: 4533                      # 4,080 outer + 453 final Development selection; 0 convergence warnings
+    wall_time_s: 9546.8
+    peak_rss_mb: 1091.2
+    analysis_code_hash: 6fd12bd54df38dbbb1ded73b2d13073395f9f1742ddc6e3aa9f84c8b8ca2038a   # identical before and after the run
+    config_sha256:
+      stage1_factorial: 2e3b300070616eabff0d2eae1230645256110e98ef97cd531853d276630b3462
+      stage1_analysis: f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b
+    weight_checks: "111 / 111 folds pass; |weighted cov(PVC, artefact)| <= 1.3e-17"
+    bootstrap_undefined_resamples: 0
+    hashes: outputs/stage1_analysis/development/hashes/{factorial_pilot_prerun.json, factorial_full_run_prerun.json, factorial_full_run_postrun.json, factorial_outputs.sha256}
+    outputs: outputs/stage1_analysis/development/factorial/   # final_models/ not in repository
+    pilot: outputs/stage1_analysis/development/factorial_pilot/   # outer fold S105
+    result_primary_rule: "pi_plus_amplitude, subject-equal: stratified AUROC 0.70, C2 FPR 0.74, C3 sensitivity 0.82"
+    conclusion: "score dependence on artefact decreased; improved PVC detection was not shown (C0/C2 FPR not reduced, balanced accuracy about 0.54)"
 
   regime2: not_started
   regime3: not_started
-  level3: not_started
+  level3: design_in_preparation     # classical baseline comparison; no training before design approval
   decision_threshold: not_started
 
 test_split:

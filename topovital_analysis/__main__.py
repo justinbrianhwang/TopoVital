@@ -12,6 +12,7 @@ from topovital_stage1.features import representative_events
 
 from .level1 import run_level1
 from .level2 import run_level2
+from .factorial import run_factorial
 
 
 def main(argv=None) -> int:
@@ -22,8 +23,27 @@ def main(argv=None) -> int:
     level.add_argument("--events", type=int)
     level2 = sub.add_parser("level2")
     level2.add_argument("--pilot", action="store_true")
+    factorial = sub.add_parser("factorial")
+    factorial.add_argument("--pilot", action="store_true")
     args = parser.parse_args(argv)
     try:
+        if args.command == "factorial":
+            root = PROJECT_ROOT
+            cfg_f = load_yaml(root / "configs" / "stage1_factorial.yaml")
+            cfg_a = load_yaml(root / "configs" / "stage1_analysis.yaml")
+            if not args.pilot and not cfg_f["approved_for_full_run"]:
+                raise BlockedError("Factorial full run requires approved_for_full_run")
+            events = load_dev_events(root / "outputs" / "development" / "event_audit_dev.parquet",
+                                     root / "outputs" / "split_assignment.csv")
+            out = root / "outputs" / "stage1_analysis" / "development" / ("factorial_pilot" if args.pilot else "factorial")
+            for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
+                os.environ[name] = "1"
+            run_id = new_run_id(config_hash({"factorial": cfg_f, "analysis": cfg_a}))
+            with profiled(root / "outputs", run_id, "stage1 analysis factorial", n_jobs=1) as record:
+                summary = run_factorial(events, cfg_f, cfg_a, root, out, pilot=args.pilot)
+                record["note"] = f"fits={summary['fits']}; outer_folds={summary['outer_folds']}"
+            print(f"Factorial: {summary['fits']} fits; output={out.relative_to(root).as_posix()}")
+            return 0
         if args.command == "level2":
             root = PROJECT_ROOT
             cfg = load_yaml(root / "configs" / "stage1_analysis.yaml")

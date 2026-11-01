@@ -168,4 +168,30 @@ configuration SHA256 `f3c61b65…` were identical before and after the run (`has
 selection (separate LOSO over all 10 subjects): `pi_only` and `pi_plus_amplitude` R = 10, σ = 2 px, C = 0.1;
 `amplitude_only` C = 10. Outer-fold `pi_plus_amplitude`: C1/C2 AUROC 0.92, C0 FPR 0.68, C3 sensitivity 0.59
 (subject-equal). Limitation: in C1/C2 training PVC presence and artefact absence are perfectly aligned, so the AUROC
-does not measure PVC detection; a factorial C0–C3 design is in preparation. `final_models/` is not published.
+does not measure PVC detection; see the factorial C0–C3 analysis below. `final_models/` is not published.
+
+## Stage 1 analysis — factorial C0–C3 training (Development only)
+
+Settings: `configs/stage1_factorial.yaml` (inherits everything else from `configs/stage1_analysis.yaml`). Approved by
+the principal investigator on 2026-11-01.
+
+| ID | Item | Approved decision |
+|---|---|---|
+| F-01 | Training set and weights | PVC (C1, C3) vs non-PVC (C0, C2) in one model. Each subject has equal total weight; within a subject each condition has weight 1/4; within C2/C3 the 18 noise × SNR cells are equal and events are equal within a cell. The weighted covariance between PVC and artefact is 0. L-06 mean-1 scaling is applied immediately before the fit |
+| F-02 | Selection metric | Stratified AUROC: per subject 0.5 · AUROC(C1 vs C0) + 0.5 · mean over the 18 cells of AUROC(C3 vs C2), then subject-equal mean; inner LOSO only |
+| F-03 | Thresholds | Primary: largest t with subject-equal [0.5 · sens(C1) + 0.5 · cell-mean sens(C3)] ≥ 0.90. Secondary: C1 sensitivity ≥ 0.90 (the Level 2 rule). Both from the training subjects' inner out-of-fold scores |
+| F-04 | Artefact dependence and Level 2 comparison | AUROC(C2 vs C0), AUROC(C3 vs C1), paired score changes f(C2) − f(C0) and f(C3) − f(C1), FPR and sensitivity differences; comparison with the read-only, hash-verified Level 2 out-of-fold predictions matched on subject, event, condition and cell, paired subject-cluster bootstrap with identical resamples. Robustness is not claimed from AUROC near 0.5 alone; it requires lower C0/C2 FPR together with maintained or improved C1/C3 sensitivity |
+
+**Factorial full nested LOSO** (2026-11-01): 10 / 10 outer folds, 4,533 fits (4,080 outer + 453 final Development
+selection), 0 convergence warnings, 9,547 s, peak 1,091 MB. Analysis code hash `6fd12bd5…` and configuration SHA256
+`2e3b3000…` (factorial) / `f3c61b65…` (analysis) were identical before and after the run
+(`hashes/factorial_full_run_prerun.json`, `hashes/factorial_full_run_postrun.json`); output file hashes are in
+`hashes/factorial_outputs.sha256`. Independent checks: weights pass in all 111 training folds; PI regions equal the
+Level 2 regions for all 100 shared folds; inner and final selections re-derived; per-subject metrics match sklearn
+(max difference 3.3e-16); 0 undefined bootstrap resamples. Level 1 and Level 2 outputs and the NPZ inputs were
+unchanged. Final Development selection: `pi_only` R = 10, σ = 1 px, C = 0.001; `pi_plus_amplitude` R = 10,
+σ = 1 px, C = 0.01; `amplitude_only` C = 0.01. Outer-fold `pi_plus_amplitude` at the primary threshold
+(subject-equal): stratified AUROC 0.70, C2 FPR 0.74, C3 sensitivity 0.82. Against Level 2 at the same C1 rule,
+artefact dependence decreased (AUROC(C2 vs C0) 0.22 → 0.53) but C2 FPR rose (0.38 → 0.71), C0 FPR did not fall and
+stratified AUROC fell (0.78 → 0.70). Conclusion: score dependence on artefact decreased; improved PVC detection was
+not shown. `final_models/` is not published.

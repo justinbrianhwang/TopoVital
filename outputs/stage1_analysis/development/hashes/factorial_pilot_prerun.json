@@ -1,0 +1,19 @@
+{
+  "recorded_utc": "2026-11-01T18:36:41Z",
+  "purpose": "pre-run record for factorial C0-C3 pilot (one outer fold, S105, Development)",
+  "analysis_code_hash": "6fd12bd54df38dbbb1ded73b2d13073395f9f1742ddc6e3aa9f84c8b8ca2038a",
+  "files": {
+    "topovital_analysis/__init__.py": "3d41dde13a7e5b2d5ce62472406d59d2aa197caaaeabec36f62bb072d751ca65",
+    "topovital_analysis/__main__.py": "333c0b8629dc086b43d62f66f359d637c1c9459b213bbf0b7dff948a55a6d9c5",
+    "topovital_analysis/distances.py": "3387829c8639d6b87753526724441bd9a4c3a9e4d4d42dc2ab78e0dbb2648625",
+    "topovital_analysis/factorial.py": "c63a5cee5d626ba595d6bcdeb544231110a7419c79ecb3a475fc9a15fc311d61",
+    "topovital_analysis/factorial_metrics.py": "962a8162ae1838483d5e4ff2ca5349a194696efe9a6053508e3881a518e6e98d",
+    "topovital_analysis/level1.py": "dee81e81ff8d76702a0c06b48378233c50f79c5c176582a56cae007fb5a5823b",
+    "topovital_analysis/level2.py": "be9808fd2af994391b20ca9845ff23420895b9bfcf1e7063c390a41df97b6d28",
+    "topovital_analysis/level2_metrics.py": "c2bf4f2c6597423a703650ac41dab55d3e5aa30f10ad7300119f8128a2a2c642",
+    "topovital_analysis/persistence_images.py": "4b43b7a1f3df1a25f4cb77ac20643107fee9d8ac6570a6d8f91c9fc7ce50ed90",
+    "topovital_analysis/stats.py": "423a7d187746519da284c0eab13d6aeda30de5f6276544ec40808d32086117e4",
+    "configs/stage1_factorial.yaml": "2d60bb0d3b7ff75ad3ea789a29c26326c69ada15d02ec3a5a2da7ffca5498a59",
+    "configs/stage1_analysis.yaml": "f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b"
+  }
+}
