@@ -85,7 +85,7 @@ Stage 1 uses the 126 Development Common-cohort events at `g = 250 ms`. C1 is the
 | Normalization | `(x − median(pre)) / IQR(pre)`, using pre-window statistics for both halves |
 | Delay embedding | τ = 28 samples (pooled median of AMI first minima), m = 5 (FNN < 5 %). Never crosses `t0` |
 | Point cloud | 300 delay vectors per half, uniform stride |
-| Vietoris–Rips | GUDHI 3.13.0, full complex (no `r_max`), `max_dimension = 2`, H0 and H1 |
+| Vietoris–Rips | GUDHI 3.13.0, full complex (no `r_max`), `max_dimension = 2`, H0 and H1. Built on the 300 subsampled delay vectors of each half, **not** on the raw ECG samples |
 | Cubical | Sublevel PH of `x` and superlevel PH of `−x` |
 
 **Clean windows, C0/C1** ([`outputs/stage1_features/development/`](outputs/stage1_features/development/)):
@@ -97,6 +97,12 @@ Stage 1 uses the 126 Development Common-cohort events at `g = 250 ms`. C1 is the
 | Validation | All jobs pass. VR has 4,500,250 simplices, 1 essential H0 bar and 0 essential H1 bars. Cubical essential births equal `min(x)` and `−max(x)` |
 | Wall time (4 workers) | 1,797 s |
 | Max child peak RSS | 490 MB |
+
+**Scope and cost of the VR computation.** "Full complex" means that no edge-length truncation is applied to these 300 points. Every complex therefore has 300 vertices, C(300, 2) = 44,850 edges and C(300, 3) = 4,455,100 triangles, for 4,500,250 simplices in total.
+
+The result is exact persistent homology of a 300-point delay-embedding sample of each 5 s half. It is not a topological computation on the complete raw signal: one half holds 1,800 samples, which give 1,688 delay vectors at τ = 28 and m = 5.
+
+Measured cost per VR job over the 504 C0/C1 jobs is a median wall time of 14.2 s (range 7.0–25.6 s, single thread, 4 jobs running at once) and a peak RSS of 487–490 MB. Cost grows roughly as O(N³) in the number of points, so a larger N would need a separate resource assessment.
 
 The embedding diagnostics behind τ and m are in [`outputs/stage1_pilot/`](outputs/stage1_pilot/). That folder's `embedding_selection_PENDING.md` lists the open questions as they stood before approval; decisions B-01 to B-03 in [`outputs/implementation_decisions.md`](outputs/implementation_decisions.md) resolved them.
 
