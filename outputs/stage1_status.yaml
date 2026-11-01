@@ -3,7 +3,7 @@
 # run configuration. Its `pending:` block (perturbations_regimes_1_3: null, ...) predates the Regime 1 run;
 # this file is the authoritative progress record and supersedes that block.
 
-as_of_utc: "2026-11-01T14:26:17Z"
+as_of_utc: "2026-11-01T16:11:16Z"
 
 stage0:
   status: frozen
@@ -55,10 +55,21 @@ stage1:
       hashes: outputs/stage1_features/development/hashes/
       per_job_npz: not_in_repository   # 504 + 4,536 .npz diagram files, to be archived on Zenodo
 
+  analysis_level1_ph_distances:
+    status: complete                # decisions L-01..L-06, configs/stage1_analysis.yaml
+    run_id: 20261101T150913Z_4c84c249
+    windows: 4788
+    distances: 57456
+    failures: 0
+    outputs: outputs/stage1_analysis/development/level1/
+
+  analysis_level2_persistence_images:
+    status: full_nested_loso_running   # approved 2026-11-01; pre-run hashes in outputs/stage1_analysis/development/hashes/
+    pilot: outputs/stage1_analysis/development/level2_pilot/   # one outer fold, before the final-selection step was added
+
   regime2: not_started
   regime3: not_started
-  persistence_image: not_started
-  classifier: not_started
+  level3: not_started
   decision_threshold: not_started
 
 test_split:

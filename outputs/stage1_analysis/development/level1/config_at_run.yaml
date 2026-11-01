@@ -1,0 +1,76 @@
+# TopoVital Stage 1 analysis (Level 1 PH distances, Level 2 persistence images), Development only.
+# Source tags: [P§n] protocol v1.3 section n · [APPROVED L-0n] approved by the principal investigator on 2026-11-01 ·
+# [PI] condition stated by the principal investigator with the approval.
+# Inputs are read-only: Stage 0 frozen files, configs/stage1*.yaml, and the 5,040 Stage 1 .npz job files.
+
+scope:
+  split: development_only             # [PI] Test is never read
+  events: 126                         # Common cohort, g = 250 ms, 10 subjects
+  conditions: [C0, C1, C2, C3]
+  regime1_cells: {noise_types: [bw, ma, em], snr_db: [24, 18, 12, 6, 0, -6]}
+  excluded: [regime2, regime3, test_evaluation]
+
+inputs:
+  clean_jobs: outputs/stage1_features/development/jobs            # C0/C1, pre and post
+  regime1_jobs: outputs/stage1_features/development/regime1_jobs  # C2/C3, post only
+  pre_half_of: {C2: C0, C3: C1}       # verified identical inputs (SHA256) in the Regime 1 run
+  representations:                    # analysed separately [P§6]
+    cub_sub_h0: cubical_sub_finite
+    cub_super_h0: cubical_super_finite
+    vr_h0: vr_h0                      # rows with infinite death removed
+    vr_h1: vr_h1
+  pairs: finite_only                  # essential bars excluded; their births enter Level 2 as amplitude features
+
+level1:
+  status: approved_for_full_development_run
+  metrics:
+    bottleneck: {implementation: "gudhi.bottleneck_distance(e=0)", ground_metric: linf}
+    wasserstein_1: {implementation: exact_assignment_with_diagonal, ground_metric: linf}   # [APPROVED L-05]
+    wasserstein_2: {implementation: exact_assignment_with_diagonal, ground_metric: linf}   # [APPROVED L-05]
+  crosscheck: "gudhi.hera.wasserstein_distance on a deterministic subset (approximate; diagnostic only)"
+  separation:                         # C1 (positive) vs C2 (negative), per noise type x SNR cell
+    signed_auroc: "AUROC of score = distance, C1 positive; < 0.5 means the reverse direction"   # [PI]
+    direction_free: ["2*|AUROC - 0.5|", "Kolmogorov-Smirnov D (statistic only, no p-value)"]  # [PI] descriptive
+    aggregation: [window_level, subject_equal_weight]
+    threshold_rule: "LOSO; threshold from training subjects' C1 only, subject-equal-weighted C1 sensitivity >= 0.90, direction fixed (larger distance = PVC)"   # [P§7][PI]
+    bootstrap: {kind: subject_cluster, resamples: 1000, seed: 20261031}   # [P§7]
+    undefined_metrics: not_evaluable_with_reason   # [PI]
+
+level2:
+  status: implementation_and_pilot_only           # full nested LOSO requires separate approval
+  approved_for_full_run: false
+  persistence_image:
+    coordinates: birth_persistence
+    vr_h0: persistence_only_1d        # all VR H0 births are 0
+    range_source: training_fold_C0_C1_only        # [APPROVED L-01] estimated inside every (inner and outer) training fold
+    range_quantiles: {birth: [0.005, 0.995], persistence: [0.0, 0.995]}
+    out_of_range: keep_original_coordinates_integrate_over_fixed_region   # [APPROVED L-01] no clipping
+    out_of_range_logging: [count, persistence_sum]                       # [APPROVED L-01]
+    kernel: gaussian_integrated_over_pixel
+    weight: "linear, w(p) = p / p_ref, p_ref = fold persistence upper bound"
+    per_image_normalization: none
+    candidates:                       # [APPROVED L-02] selected by inner LOSO
+      resolution: [10, 20]            # 10x10 / 20x20; VR H0 10 / 20
+      sigma_pixels: [1, 2]
+  features:
+    pi: [pre, post, post_minus_pre]   # per representation [P§6]
+    amplitude: "min(x), max(x), max(x)-min(x) of the normalized half; pre, post, post-pre (9 values)"   # [P§6]
+    models: [pi_only, amplitude_only, pi_plus_amplitude]   # [APPROVED L-03]
+    standardization: fit_on_training_fold_only   # [PI]
+  classifier:
+    kind: l2_logistic_regression
+    c_grid: [0.001, 0.01, 0.1, 1, 10]
+    training_set: "C1 (126, once) vs C2 (all 18 cells) in one model"   # [APPROVED L-04]
+    sample_weights: "each subject total weight equal; within subject C1 total = C2 total"   # [APPROVED L-04]
+  cross_validation:
+    outer: leave_one_subject_out
+    inner: leave_one_subject_out_on_training_subjects
+    selection_metric: subject_equal_weight_signed_auroc
+    tie_break: [smaller_resolution, larger_sigma, smaller_C]
+    threshold_rule: "inner out-of-fold C1 scores of training subjects, subject-equal-weighted sensitivity >= 0.90"   # [P§7]
+  reporting:
+    primary: "C1 vs C2 per noise type x SNR cell; window-level and subject-level"
+    secondary_descriptive: [C3_sensitivity, C0_false_positive_rate, protocol_9_cell_aggregate]
+    bootstrap: {kind: subject_cluster, resamples: 1000, seed: 20261031}
+    mmd: {use: exploratory_descriptive_only, kernel: gaussian_median_heuristic, estimator: unbiased_mmd2, p_values: none}   # [P§6][PI]
+    undefined_metrics: not_evaluable_with_reason

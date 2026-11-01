@@ -1,0 +1,13 @@
+{
+  "windows": 380,
+  "distances": 4560,
+  "failures": 0,
+  "wall_time_s": 1088.6486293000053,
+  "parent_peak_rss_mb": 255.7890625,
+  "worker_peak_rss_mb": 156.47265625,
+  "workers": 4,
+  "config_sha256": "ba2079a0109a3490c68f3e58a60723e8a6042a496c96b7dd4aa902297d472a58",
+  "code_hash": "70b11d12a1f53b868b5e200eb63ace8f7043588a454d70899ad8713fc1c7654e",
+  "input_npz_manifest_sha256": "17fac35ed864b2caa5eeaf38a9e021cdae21952881967e6e547a63dc53a1589a",
+  "hera_max_relative_difference": 3.111934168066556e-06
+}

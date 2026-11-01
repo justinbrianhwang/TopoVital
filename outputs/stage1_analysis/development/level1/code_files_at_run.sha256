@@ -1,0 +1,6 @@
+# Per-file SHA256 of topovital_analysis/*.py as of the Level 1 full run (code_hash 70b11d12...). Level 2 later added files and extended __main__.py; Level 1 modules are unchanged.
+3d41dde13a7e5b2d5ce62472406d59d2aa197caaaeabec36f62bb072d751ca65  topovital_analysis/__init__.py
+05ca9161bbcdcddac3e6f3f66016c021d4d652046ffc82e29368a862ef5991ad  topovital_analysis/__main__.py
+3387829c8639d6b87753526724441bd9a4c3a9e4d4d42dc2ab78e0dbb2648625  topovital_analysis/distances.py
+dee81e81ff8d76702a0c06b48378233c50f79c5c176582a56cae007fb5a5823b  topovital_analysis/level1.py
+423a7d187746519da284c0eab13d6aeda30de5f6276544ec40808d32086117e4  topovital_analysis/stats.py

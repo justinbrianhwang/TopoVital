@@ -134,3 +134,29 @@ computed separately for C2 and C3; 5 s snippets with mean removal; SNR verified 
   (`tools/make_public_copies.py`). Per-job `.npz` files are not published in the repository.
 - **Status record:** `configs/stage1.yaml` is unchanged to preserve its recorded hash; current progress is recorded in
   `outputs/stage1_status.yaml` (Regime 2/3, persistence images and classifiers not started; Test locked for Stage 1).
+
+## Stage 1 analysis — Level 1 PH distances and Level 2 persistence images (Development only)
+
+Settings: `configs/stage1_analysis.yaml`. Approved by the principal investigator on 2026-11-01.
+
+| ID | Item | Approved decision |
+|---|---|---|
+| L-01 | Persistence-image region | Estimated from the C0/C1 halves of the training subjects of each (inner and outer) fold only: birth q0.005–q0.995, persistence 0–q0.995. Pairs outside the region keep their original coordinates (no clipping); their Gaussian mass is integrated over the fixed region, and their count and persistence sum are logged |
+| L-02 | PI candidates | Resolution 10×10 / 20×20 and σ = 1 / 2 pixels, selected by inner LOSO |
+| L-03 | Level 2 models | `pi_only`, `amplitude_only` and `pi_plus_amplitude`; amplitude features (min, max, range; pre, post, post − pre) defined identically for all models and excluded from `pi_only` |
+| L-04 | Training set and weights | One classifier on C1 (126 windows, each once) vs all 18 C2 cells; every subject has equal total weight and, within a subject, C1 and C2 have equal total weight |
+| L-05 | Diagram distances | Bottleneck, W1 and W2 with the L∞ ground metric; W1/W2 computed exactly (assignment with diagonal copies); exact-value unit tests including diagonal matching and empty diagrams |
+| L-06 | Fit weight scale | The weights passed to `LogisticRegression.fit` are rescaled to mean 1 in every training fold (`fit_weights`), so the C grid has its conventional meaning; the relative weights of L-04 are unchanged (unit tests `test_fit_weights_have_mean_one_and_preserve_ratios` and the mocked-fit test) |
+
+Additional conditions: signed AUROC (fixed direction, larger distance = PVC) is reported separately from
+direction-free separation (2·|AUROC − 0.5|, KS statistic without p-value); thresholds are set on training subjects
+only; metrics undefined in LOSO or bootstrap are recorded as not evaluable; PI region, standardization, model
+selection and thresholds never use the validation subject; MMD is exploratory only. The final Development PI
+setting, C and operating threshold are chosen by a separate LOSO over all 10 Development subjects, never from
+outer-fold performance. Test is not used.
+
+**Level 1 full run** (run_id `20261101T150913Z_4c84c249`): 4,788 windows × 12 distances = 57,456, 0 failures,
+1,500 s with 4 workers. The exact distances matched an independent GUDHI/hera recomputation (25 random windows,
+max relative difference 6.6e-11), and AUROC matched sklearn (max difference 1.7e-16). The run's configuration copy
+(`level1/config_at_run.yaml`, SHA256 `ba2079a0…`) and per-file code hashes (`level1/code_files_at_run.sha256`) are
+kept because the configuration later received the Level 2 approval keys and `__main__.py` gained the `level2` command.

@@ -13,7 +13,8 @@ the **Stage 1** topological feature extraction, which is in progress on Developm
 > - **Stage 1 (Development only):**
 >   - Clean-window persistent homology (C0/C1) is complete: 504 / 504 jobs succeeded.
 >   - Regime 1 artefact injection (C2/C3, NSTDB `bw` / `ma` / `em`) is complete: 4,536 / 4,536 jobs succeeded.
-> - Test remains locked for Stage 1. Regime 2/3, persistence images, classifiers and statistical evaluation (protocol §7) have not started.
+> - **Level 1 analysis** (pre/post PH distances, Development) is complete. **Level 2** (persistence images with nested subject-level CV, Development) is running.
+> - Test remains locked for Stage 1. Regime 2/3, Level 3 and Test evaluation have not started.
 > - The authoritative progress record is [`outputs/stage1_status.yaml`](outputs/stage1_status.yaml).
 
 <p align="center">
@@ -136,6 +137,39 @@ The original Regime 1 ledgers contain local absolute paths and are kept out of t
 
 Per-job persistence diagrams (504 + 4,536 `.npz` files) are not stored in this repository; they will be archived on Zenodo.
 
+## Stage 1 analysis, Level 1: pre/post PH distances (Development)
+
+Settings are in [`configs/stage1_analysis.yaml`](configs/stage1_analysis.yaml) (approvals L-01 to L-06).
+
+**Method**
+- **Pairs:** for each window, the pre-half and post-half diagrams are compared, giving 4,788 pairs: C0 126, C1 126, C2 2,268 and C3 2,268. C2/C3 reuse the C0/C1 pre half.
+- **Representations and distances:** four representations are analysed separately: cubical sublevel H0, cubical superlevel H0, VR H0 and VR H1. Each pair gets three distances: bottleneck, W1 and W2. All use the L∞ ground metric and finite pairs only. W1 and W2 are exact, from an assignment problem with diagonal copies.
+- **Separation measures:** C1 (PVC) is compared with C2 (artefact on a normal window) in each noise type × SNR cell.
+  - **Signed AUROC** fixes the direction (larger distance = PVC), so values below 0.5 mean the direction is reversed.
+  - **Direction-free separation** is reported separately: `2·|AUROC − 0.5|` and the KS statistic, without p-values.
+  - **LOSO operating point:** the threshold is set on the training subjects' C1 windows for 90 % C1 sensitivity, then applied to the held-out subject.
+  - **Uncertainty:** subject-cluster bootstrap with 1,000 resamples.
+  - **Aggregation:** results are given at window level and subject level (equal weight per subject).
+
+**Run:** 57,456 distances, 0 failures, 1,500 s with 4 workers.
+- **Independent check:** an independent GUDHI/hera recomputation agrees within 6.6e-11 (relative).
+- **Exact vs approximate:** the hera approximation differs from the exact values by at most 2.7e-6.
+
+**Signed AUROC, C1 vs C2 (window level, bw / em / ma):**
+
+| Representation, distance | 24 dB | 12 dB | 6 dB | 0 dB | −6 dB |
+|---|---|---|---|---|---|
+| VR H0, bottleneck | 0.77 / 0.77 / 0.77 | 0.74 / 0.74 / 0.74 | 0.64 / 0.59 / 0.58 | 0.45 / 0.38 / 0.31 | 0.33 / 0.24 / 0.12 |
+| Cubical sublevel H0, W1 | 0.51 / 0.50 / 0.47 | 0.44 / 0.45 / 0.26 | 0.32 / 0.31 / 0.09 | 0.15 / 0.15 / 0.02 | 0.04 / 0.05 / 0.00 |
+
+**Reading (descriptive, Development only):**
+- **High SNR:** VR H0 bottleneck distance separates PVC from normal windows best, with AUROC about 0.77. Cubical distances barely do (0.51–0.56).
+- **Low SNR:** the artefact changes the diagram more than the PVC does, so signed AUROC falls below 0.5. Separation becomes "large" only in the reversed direction.
+- **Operating point:** at the LOSO threshold for 90 % C1 sensitivity, the C2 false-positive rate is at best 0.44 (VR H0, 24 dB) and reaches 0.87–1.00 at 0 dB and below.
+- **Conclusion:** a single pre/post distance is not sufficient. This result is about this representation only and is not a verdict on PH as a whole.
+
+Outputs are in [`outputs/stage1_analysis/development/level1/`](outputs/stage1_analysis/development/level1/): per-window distances, summaries, C1/C2 separation per cell and per subject, and the hera cross-check.
+
 ## Installation
 
 Developed and tested on Python 3.14 (Windows 11). Other Python versions have not been verified.
@@ -188,6 +222,11 @@ python -m topovital_stage1 features --workers 4          # C0/C1 persistent homo
 python -m topovital_stage1 regime1 --workers 4           # C2/C3 Regime 1 injection (needs approved_for_full_run)
 ```
 
+```bash
+python -m topovital_analysis level1 --workers 4 [--events N]   # Level 1 pre/post PH distances
+python -m topovital_analysis level2 [--pilot]                  # Level 2 persistence images, nested LOSO (needs approval)
+```
+
 `--events N` runs a deterministic subset with one event per subject. Every VR job runs in a monitored child process with a 6 GB abort limit. Each job is cached by the SHA-256 of its normalized input, parameters, GUDHI version and Stage 1 code hash, so an interrupted run resumes without recomputation.
 
 ## Method summary (Stage 0)
@@ -217,6 +256,7 @@ configs/            stage0.yaml (all Stage 0 settings), g-decision records,
                     stage1.yaml (PH settings), stage1_regime1.yaml (artefact injection)
 topovital/          Stage 0 pipeline package (frozen)
 topovital_stage1/   Stage 1 package: embedding, persistent homology, Regime 1 injection
+topovital_analysis/ Stage 1 analysis: Level 1 PH distances, Level 2 persistence images and nested LOSO
 tools/              publication helpers: path-sanitized audit copies, cache config-hash comparison
 tests/              unit + real-data reproducibility tests (pytest); tests/stage1/ for Stage 1
 outputs/            Stage 0 deliverables: cohort_manifest.csv, event_audit*.parquet, attrition_summary.csv,
@@ -224,6 +264,7 @@ outputs/            Stage 0 deliverables: cohort_manifest.csv, event_audit*.parq
 outputs/stage1_pilot/      embedding diagnostics and PH resource pilot (Development)
 outputs/stage1_features/   Stage 1 job ledgers and run summaries (per-job .npz diagrams archived on Zenodo)
 outputs/stage1_status.yaml Stage 1 progress record
+outputs/stage1_analysis/   Level 1 / Level 2 analysis outputs (Development)
 ```
 
 ## License and data attribution

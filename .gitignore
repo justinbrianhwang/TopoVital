@@ -32,3 +32,7 @@ outputs/stage1_features/**/regime1_jobs/
 outputs/stage1_features/development/regime1_ledger.csv
 outputs/stage1_features/development/regime1_injection_log.csv
 tools/__pycache__/
+
+# Stage 1 analysis caches and fitted-model arrays (not published in the repository)
+outputs/stage1_analysis/**/.pi_cache/
+outputs/stage1_analysis/**/final_models/
