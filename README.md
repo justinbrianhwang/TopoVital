@@ -32,7 +32,7 @@ the **Stage 1** topological feature extraction, which is in progress on Developm
 - **No Test leakage.** The guard interval is chosen on Development only. Test aggregation is refused unless a frozen `locked_config.yaml` exists, and the stage-0 config hash and code hash still match. A Test-side `g` sweep is always refused.
 - **Branching cohorts.** Template failure never removes an event from the Common cohort (Regimes 1/3); it only excludes the event from the Regime 2 subset.
 - **Auditable.** Per-event audit with every gate flag, quality metric and first drop reason. Resource profile (wall time, peak RSS) for every command. SHA256 for all inputs.
-- **CPU-only.** No GPU/CUDA/PyTorch/TensorFlow dependency. Record-by-record processing. The Stage 0 pipeline pins BLAS/OpenMP threads to 1. Stage 1 analysis runs before the Level 3 full run used the machine's default BLAS thread count; see the Level 3 reproducibility exception and `outputs/resource_profile_corrections.csv`.
+- **CPU-only.** No GPU/CUDA/PyTorch/TensorFlow dependency. Record-by-record processing. The Stage 0 pipeline pins BLAS/OpenMP threads to 1. Stage 1 analysis runs before the Level 3 full run used the machine's default BLAS thread count; see the Level 3 reproducibility exception and `outputs/resource_profile_corrections.csv`. Since analysis code version 2.0.0 (`topovital_analysis/runtime.py`), the analysis CLI sets the thread variables before numpy is imported and refuses to run unless threadpoolctl reports 1 thread.
 
 ## Stage 0 results (MIT-BIH Arrhythmia Database, MLII, `g = 250 ms`)
 

@@ -117,7 +117,7 @@ stage1:
     result_primary_rule: "subject-equal stratified AUROC: classical_only 0.925, classical_plus_ph 0.899, classical_only_no_boundary 0.886, classical_plus_ph_no_boundary 0.904, ph_only 0.521"
     conclusion: "adding PH did not improve PVC detection over classical features (difference -0.026, 95% CI -0.091 to 0.021); boundary features raise classical-only AUROC by 0.039 (CI -0.003 to 0.085), interpreted as possible alignment shortcut, not removed by the no-boundary models"
     ablation_g06: not_started       # after review of the main comparison
-    bug_pending: "thread variables set after numpy import in topovital_analysis/__main__.py; fix in a separate code version"
+    thread_bug_fix: "analysis code version 2.0.0 (code hash bb5d4d5d...): thread variables set before numpy import and verified at runtime; version 1 ends at 2f6a3586...; regression test reproduces the Level 3 1-thread S210 ph_only OOF exactly"
   decision_threshold: not_started
 
 test_split:

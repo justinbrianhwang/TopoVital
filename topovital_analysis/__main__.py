@@ -1,8 +1,13 @@
 """Command-line entry point for Development PH analysis."""
 from __future__ import annotations
 
-import argparse
 import os
+
+for _var in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS",
+             "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
+    os.environ.setdefault(_var, "1")
+
+import argparse
 import sys
 
 from topovital.cohort import BlockedError
@@ -15,6 +20,10 @@ from .level2 import run_level2
 from .factorial import run_factorial
 from .classical_features import run_level3_features
 from .level3 import run_level3
+from .runtime import ANALYSIS_CODE_VERSION, verify_blas_threads
+
+
+_PROFILE_NOTE_SUFFIX = f"; analysis_code_version={ANALYSIS_CODE_VERSION}; blas_threads_verified=1"
 
 
 def main(argv=None) -> int:
@@ -33,6 +42,7 @@ def main(argv=None) -> int:
     level3.add_argument("--pilot", action="store_true")
     args = parser.parse_args(argv)
     try:
+        verify_blas_threads()
         if args.command in ("level3-features", "level3"):
             root = PROJECT_ROOT
             cfg_l3 = load_yaml(root / "configs" / "stage1_level3.yaml")
@@ -43,8 +53,6 @@ def main(argv=None) -> int:
                 raise BlockedError("--workers must be positive")
             events = load_dev_events(root / "outputs" / "development" / "event_audit_dev.parquet",
                                      root / "outputs" / "split_assignment.csv")
-            for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
-                os.environ[name] = "1"
             if args.command == "level3-features":
                 cfg_r1 = load_yaml(root / "configs" / "stage1_regime1.yaml")
                 cfg_s0 = load_yaml(root / "configs" / "stage0.yaml")
@@ -52,7 +60,7 @@ def main(argv=None) -> int:
                 run_id = new_run_id(config_hash({"level3": cfg_l3, "analysis": cfg_a, "regime1": cfg_r1, "stage0": cfg_s0}))
                 with profiled(root / "outputs", run_id, "stage1 analysis level3 features", n_jobs=args.workers) as record:
                     summary = run_level3_features(events, cfg_l3, cfg_a, cfg_r1, cfg_s0, root, out, workers=args.workers)
-                    record["note"] = f"windows={summary['windows']}; stop_rule_passed={summary['stop_rule_passed']}"
+                    record["note"] = f"windows={summary['windows']}; stop_rule_passed={summary['stop_rule_passed']}{_PROFILE_NOTE_SUFFIX}"
                 print(f"Level 3 features: {summary['windows']} windows; output={out.relative_to(root).as_posix()}")
             else:
                 cfg_f = load_yaml(root / "configs" / "stage1_factorial.yaml")
@@ -60,7 +68,7 @@ def main(argv=None) -> int:
                 run_id = new_run_id(config_hash({"level3": cfg_l3, "factorial": cfg_f, "analysis": cfg_a}))
                 with profiled(root / "outputs", run_id, "stage1 analysis level3", n_jobs=1) as record:
                     summary = run_level3(events, cfg_l3, cfg_f, cfg_a, root, out, pilot=args.pilot)
-                    record["note"] = f"fits={summary['fits']}; outer_folds={summary['outer_folds']}"
+                    record["note"] = f"fits={summary['fits']}; outer_folds={summary['outer_folds']}{_PROFILE_NOTE_SUFFIX}"
                 print(f"Level 3: {summary['fits']} fits; output={out.relative_to(root).as_posix()}")
             return 0
         if args.command == "factorial":
@@ -72,12 +80,10 @@ def main(argv=None) -> int:
             events = load_dev_events(root / "outputs" / "development" / "event_audit_dev.parquet",
                                      root / "outputs" / "split_assignment.csv")
             out = root / "outputs" / "stage1_analysis" / "development" / ("factorial_pilot" if args.pilot else "factorial")
-            for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
-                os.environ[name] = "1"
             run_id = new_run_id(config_hash({"factorial": cfg_f, "analysis": cfg_a}))
             with profiled(root / "outputs", run_id, "stage1 analysis factorial", n_jobs=1) as record:
                 summary = run_factorial(events, cfg_f, cfg_a, root, out, pilot=args.pilot)
-                record["note"] = f"fits={summary['fits']}; outer_folds={summary['outer_folds']}"
+                record["note"] = f"fits={summary['fits']}; outer_folds={summary['outer_folds']}{_PROFILE_NOTE_SUFFIX}"
             print(f"Factorial: {summary['fits']} fits; output={out.relative_to(root).as_posix()}")
             return 0
         if args.command == "level2":
@@ -88,12 +94,10 @@ def main(argv=None) -> int:
             events = load_dev_events(root / "outputs" / "development" / "event_audit_dev.parquet",
                                      root / "outputs" / "split_assignment.csv")
             out = root / "outputs" / "stage1_analysis" / "development" / ("level2_pilot" if args.pilot else "level2")
-            for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
-                os.environ[name] = "1"
             run_id = new_run_id(config_hash(cfg))
             with profiled(root / "outputs", run_id, "stage1 analysis level2", n_jobs=1) as record:
                 summary = run_level2(events, cfg, root, out, pilot=args.pilot)
-                record["note"] = f"fits={summary['fits']}; outer_folds={summary['outer_folds']}"
+                record["note"] = f"fits={summary['fits']}; outer_folds={summary['outer_folds']}{_PROFILE_NOTE_SUFFIX}"
             print(f"Level 2: {summary['fits']} fits; output={out.relative_to(root).as_posix()}")
             return 0
         if args.workers < 1:
@@ -107,12 +111,10 @@ def main(argv=None) -> int:
         if args.events is not None:
             events = representative_events(events, args.events)
         out = root / "outputs" / "stage1_analysis" / "development" / ("level1_pilot" if args.events is not None else "level1")
-        for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
-            os.environ[name] = "1"
         run_id = new_run_id(config_hash(cfg))
         with profiled(root / "outputs", run_id, f"stage1 analysis level1 workers={args.workers}", n_jobs=args.workers) as record:
             summary = run_level1(events, cfg, root, out, args.workers, pilot=args.events is not None)
-            record["note"] = f"windows={summary['windows']}; failures={summary['failures']}"
+            record["note"] = f"windows={summary['windows']}; failures={summary['failures']}{_PROFILE_NOTE_SUFFIX}"
         print(f"Level 1: {summary['windows']} windows, {summary['failures']} failures; output={out.relative_to(root).as_posix()}")
         return 0
     except BlockedError as exc:

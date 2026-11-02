@@ -211,3 +211,11 @@ variables after numpy is imported; verified by an S210 refit under both settings
 the single-thread results; details in `level3_audit/reproducibility_exception.md`, corrected thread records in
 `outputs/resource_profile_corrections.csv` (original `resource_profile.csv` unchanged). The bug will be fixed in a
 separate code version.
+
+**Analysis code version 2.0.0** (2026-11-02): `topovital_analysis/__main__.py` now sets the five thread variables
+before numpy is imported, and every analysis command first calls `runtime.verify_blas_threads()`. That check refuses
+to run unless every variable equals 1 and threadpoolctl reports 1 thread for OpenBLAS, OpenMP, MKL and BLIS.
+Profile notes record the code version. Version 1 is every analysis code state up to code hash `2f6a3586…`; results
+produced with it are reproduced by version 2 only if they ran with 1 thread (the Level 3 full run did; Level 2 and
+the factorial runs did not). A data-dependent regression test refits the S210 outer-fold `ph_only` model and matches
+the Level 3 out-of-fold scores exactly. Version 2 code hash: `bb5d4d5d…`.
