@@ -40,3 +40,7 @@ tools/__pycache__/
 # Stage 1 analysis caches and fitted-model arrays (not published in the repository)
 outputs/stage1_analysis/**/.pi_cache/
 outputs/stage1_analysis/**/final_models/
+
+# Final Test: Development verification originals hold local absolute paths, replayed diagrams and refitted models;
+# the sanitized reports are in outputs/final_test/public/
+outputs/final_test/dev_verification*/

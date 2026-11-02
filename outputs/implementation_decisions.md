@@ -219,3 +219,41 @@ Profile notes record the code version. Version 1 is every analysis code state up
 produced with it are reproduced by version 2 only if they ran with 1 thread (the Level 3 full run did; Level 2 and
 the factorial runs did not). A data-dependent regression test refits the S210 outer-fold `ph_only` model and matches
 the Level 3 out-of-fold scores exactly. Version 2 code hash: `bb5d4d5d…`.
+
+## Stage 1 analysis — G-06 feature-group ablation (Development only, exploratory)
+
+**G-06** (2026-11-02, `configs/stage1_g06_ablation.yaml`, analysis code 2.0.0, 1 verified BLAS thread). Each of
+seven classical feature groups (rhythm, QRS/template, amplitude, DWT, PSD, spectral entropy, SQI) was removed from
+`classical_only` and from `classical_only_no_boundary`, giving 14 ablated models. Each was refitted with the Level 3
+nested LOSO, C grid and thresholds: 7,360 fits, 0 convergence warnings, 8,977 s, peak 538 MB. The two references
+were refitted first and equal the Level 3 out-of-fold scores, thresholds and selected C exactly.
+
+Subject-equal stratified AUROC, primary rule, reference minus ablated model, from `classical_only` (0.925):
+- QRS/template: 0.062 (95 % CI −0.002 to 0.152);
+- rhythm: 0.037 (−0.011 to 0.108);
+- SQI: 0.018 (0.003 to 0.039);
+- every other group: ≤ 0.010.
+
+Removing QRS/template, rhythm or DWT raised C0 and C2 FPR, with CIs that exclude 0. From
+`classical_only_no_boundary` (0.886), no removal lowered AUROC with a CI excluding 0. The analysis is exploratory:
+no feature set was selected and no Test model changed.
+
+## Final Test freeze — researcher decisions (2026-11-02)
+
+- **U-01, Test noise allocation:** the Development C-02 rule applied to the NSTDB Test block [325000, 650000):
+  - non-overlapping 1,800-sample slots, seed 20261031, events sorted by event_id;
+  - an independent permutation per noise type, assigned without replacement;
+  - one snippet per (event, noise type), reused across C2/C3 and all SNRs.
+
+  Preview from slot positions only: 243 snippets spanning samples 326,800 to 649,000, no overlap with Development,
+  no reuse.
+- **U-02, noise channel:** `match_ecg_signal_index`. The NSTDB channel equals the record's MLII signal index. Only
+  record 114 (subject S114, 18 Test events, MLII on index 1) uses noise2; all other Test records use noise1, as in
+  Development. During the Test run the noise1/noise2 difference over the allocated 114 snippets is recorded
+  descriptively (`noise_channel_audit.csv`). It is never used to change models, thresholds or features.
+- **PH failure:** the Not Evaluable policy is kept.
+  - Every failure is logged with event, condition, subject and reason (`failure_log.csv`).
+  - Primary metrics and paired comparisons use the common evaluable set (all five models scored).
+  - Per-model all-available metrics are secondary.
+  - Exclusions are reported by subject, so selection bias from failures stays visible.
+- Test execution itself remains unapproved (`approved_for_test_execution: false`).

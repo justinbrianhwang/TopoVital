@@ -1,0 +1,258 @@
+{
+  "checks": [
+    {
+      "check": "three_distinct_development_subjects",
+      "value": [
+        "S105",
+        "S116",
+        "S123"
+      ],
+      "passed": true
+    },
+    {
+      "check": "frozen_parameters",
+      "value": {
+        "points": 300,
+        "tau": 28,
+        "m": 5,
+        "max_dimension": 2,
+        "r_max": "inf",
+        "snr_tolerance": 0.001
+      },
+      "passed": true
+    },
+    {
+      "check": "no_test_outputs",
+      "value": {
+        "jobs_content": {
+          "outputs/final_test/jobs": [],
+          "outputs/final_test/regime1_jobs": []
+        },
+        "prediction_paths": []
+      },
+      "passed": true
+    },
+    {
+      "check": "test_allocation_dry_run",
+      "value": {
+        "events": 81,
+        "unique_snippets": 243,
+        "min_start": 326800,
+        "max_end": 649000,
+        "overlap_with_development": false,
+        "reuse_count_max": 1
+      },
+      "passed": true
+    },
+    {
+      "check": "noise_channel_rule",
+      "value": [
+        {
+          "record_id": "100",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        },
+        {
+          "record_id": "106",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        },
+        {
+          "record_id": "114",
+          "mlii_channel_index": 1,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 1
+        },
+        {
+          "record_id": "119",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        },
+        {
+          "record_id": "200",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        },
+        {
+          "record_id": "201",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        },
+        {
+          "record_id": "202",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        },
+        {
+          "record_id": "203",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        },
+        {
+          "record_id": "205",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        },
+        {
+          "record_id": "223",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        },
+        {
+          "record_id": "228",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        },
+        {
+          "record_id": "230",
+          "mlii_channel_index": 0,
+          "fixed_channel_0": 0,
+          "match_ecg_signal_index": 0
+        }
+      ],
+      "rule": "match_ecg_signal_index",
+      "passed": true
+    },
+    {
+      "check": "replay_snr",
+      "value": 7.105427357601002e-15,
+      "passed": true
+    },
+    {
+      "check": "replay_ph_diagrams",
+      "value": 48,
+      "passed": true
+    },
+    {
+      "check": "replay_input_sha256",
+      "value": 48,
+      "passed": true
+    },
+    {
+      "check": "replay_classical_features",
+      "value": 0.0,
+      "passed": true
+    },
+    {
+      "check": "development_application_rows",
+      "value": 23940,
+      "passed": true
+    },
+    {
+      "check": "saved_model_sklearn_scores",
+      "value": {
+        "classical_only": 3.3306690738754696e-16,
+        "ph_only": 0.0,
+        "classical_plus_ph": 0.0,
+        "classical_only_no_boundary": 3.3306690738754696e-16,
+        "classical_plus_ph_no_boundary": 0.0
+      },
+      "passed": true
+    },
+    {
+      "check": "saved_pi_regions",
+      "value": {
+        "classical_only": true,
+        "ph_only": true,
+        "classical_plus_ph": true,
+        "classical_only_no_boundary": true,
+        "classical_plus_ph_no_boundary": true
+      },
+      "passed": true
+    },
+    {
+      "check": "cubical_finite_essential_handling",
+      "value": [
+        "vr_h0",
+        "vr_h1",
+        "cubical_sub_finite",
+        "cubical_sub_essential_births",
+        "cubical_super_finite",
+        "cubical_super_essential_births"
+      ],
+      "passed": true
+    },
+    {
+      "check": "final_refit_parameters",
+      "value": {
+        "classical_only": {
+          "logistic_coef": 0.0,
+          "logistic_intercept": 0.0
+        },
+        "ph_only": {
+          "logistic_coef": 0.0,
+          "logistic_intercept": 0.0
+        },
+        "classical_plus_ph": {
+          "logistic_coef": 0.0,
+          "logistic_intercept": 0.0
+        },
+        "classical_only_no_boundary": {
+          "logistic_coef": 0.0,
+          "logistic_intercept": 0.0
+        },
+        "classical_plus_ph_no_boundary": {
+          "logistic_coef": 0.0,
+          "logistic_intercept": 0.0
+        }
+      },
+      "passed": true
+    },
+    {
+      "check": "resource_benchmark",
+      "value": {
+        "clean_jobs": 324,
+        "injected_jobs": 2916,
+        "mean_job_s": 15.446370469226197,
+        "replay_mean_job_s": 18.86204701875431,
+        "cpu_hours": 13.901733422303577,
+        "wall_hours_at_workers": 3.4754333555758943,
+        "peak_rss_mb_per_vr_job": 490.33984375,
+        "workers": 4
+      },
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "pending_decisions": [],
+  "threadpool_info": [
+    {
+      "user_api": "blas",
+      "internal_api": "openblas",
+      "num_threads": 1,
+      "prefix": "libscipy_openblas",
+      "version": "0.3.34.106.0",
+      "threading_layer": "pthreads",
+      "architecture": "Haswell"
+    },
+    {
+      "user_api": "blas",
+      "internal_api": "openblas",
+      "num_threads": 1,
+      "prefix": "libscipy_openblas",
+      "version": "0.3.31.dev",
+      "threading_layer": "pthreads",
+      "architecture": "Haswell"
+    },
+    {
+      "user_api": "openmp",
+      "internal_api": "openmp",
+      "num_threads": 1,
+      "prefix": "vcomp",
+      "version": null
+    }
+  ],
+  "analysis_code_version": "2.0.0",
+  "final_code_hash": "2a9a664f958dae6373cb879dedd3e0031eddc3d9186b0503175e1da3d44879c1",
+  "analysis_code_hash": "66c502e825594470b8a15bff8625d483362478277f6553d39df4a3581a5ad67f"
+}

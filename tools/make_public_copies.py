@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import getpass
 import io
+import json
 import os
 import re
 import socket
@@ -179,13 +180,78 @@ def make_level3_public_copy(root: Path = ROOT) -> dict:
     return manifest
 
 
+def _public_value(value, root: Path):
+    if isinstance(value, dict):
+        public = {}
+        for key, item in value.items():
+            public_key = _public_value(key, root)
+            if public_key in public:
+                raise ValueError(f"Public dict keys collide after path rewrite: {public_key!r}")
+            public[public_key] = _public_value(item, root)
+        return public
+    if isinstance(value, list):
+        return [_public_value(item, root) for item in value]
+    if not isinstance(value, str):
+        return value
+    normalized = value.replace("\\", "/")
+    prefix = str(root.resolve()).replace("\\", "/").rstrip("/")
+    if normalized.casefold().startswith((prefix + "/").casefold()):
+        return normalized[len(prefix) + 1:]
+    if re.match(r"^(?:[A-Za-z]:/|//|/)", normalized) and "/outputs/" in normalized.casefold():
+        return repo_relative_path(value)
+    return value
+
+
+def make_final_test_public_copy(root: Path = ROOT) -> dict:
+    """Publish sanitized Development verification reports and their replay ledgers."""
+    root = Path(root)
+    base = root / "outputs/final_test"
+    public_dir = base / "public"
+    entries = {}
+    for directory in sorted(base.glob("dev_verification*")):
+        if not directory.is_dir():
+            continue
+        for name in ("dev_verification_report.json", "replay/jobs_ledger.csv"):
+            source = directory / name
+            original_hash = sha256_file(source)
+            target = public_dir / directory.name / name
+            if source.suffix == ".json":
+                content = json.loads(source.read_text(encoding="utf-8"))
+                atomic_write_json(target, _public_value(content, root))
+            else:
+                frame = pd.read_csv(source, dtype=str, keep_default_na=False, encoding="utf-8")
+                for column in frame.columns:
+                    frame[column] = frame[column].map(lambda cell: _public_value(cell, root))
+                write_csv(target, frame)
+            root_prefix = re.sub(r"[\\/]+", "/", str(root.resolve())).casefold()
+            public_text = re.sub(r"[\\/]+", "/", target.read_text(encoding="utf-8")).casefold()
+            if root_prefix in public_text:
+                raise RuntimeError(f"Residual project root in public file: {target}")
+            if sha256_file(source) != original_hash:
+                raise RuntimeError(f"Source changed during publication: {source}")
+            entries[target.relative_to(root).as_posix()] = {
+                "source_path": source.relative_to(root).as_posix(),
+                "public_sha256": sha256_file(target),
+                "source_sha256": original_hash}
+    if not entries:
+        raise ValueError("No Development verification reports found")
+    manifest = {"files": entries}
+    atomic_write_json(public_dir / "PUBLIC_MANIFEST.json", manifest)
+    return manifest
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--level3", action="store_true", help="Publish the Level 3 waveform check only")
+    parser.add_argument("--final-test", action="store_true", help="Publish final Test Development verification")
     args = parser.parse_args(argv)
+    if args.level3 and args.final_test:
+        parser.error("Choose only one publication mode")
     try:
-        result = make_level3_public_copy() if args.level3 else make_public_copies()
-        print(f"Wrote {len(result['files'])} public CSVs and PUBLIC_MANIFEST.json")
+        result = (make_final_test_public_copy() if args.final_test else
+                  make_level3_public_copy() if args.level3 else make_public_copies())
+        noun = "files" if args.final_test else "CSVs"
+        print(f"Wrote {len(result['files'])} public {noun} and PUBLIC_MANIFEST.json")
     except (OSError, ValueError, RuntimeError) as exc:
         print(f"Public copy failed: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc

@@ -1,0 +1,80 @@
+# TopoVital final independent Test evaluation: predeclared, one shot.
+# Source tags: [P§n] protocol · [S0] frozen Stage 0 (outputs/locked_config.yaml) · [S1] Stage 1 configs ·
+# [L3] configs/stage1_level3.yaml and its Development results · [PI] researcher decision · PENDING = needs a
+# researcher decision before Test can run (the gate refuses any PENDING value).
+# Every value here is fixed from Development results only. No Test PH, feature, score or label outcome has been
+# computed. The Stage 0 Test cohort and eligibility counts exist from the frozen Stage 0 run (2026-10-31), so the
+# Test cohort is not claimed to be wholly unseen.
+
+status: frozen_pending_test_approval            # decisions U-01, U-02 and the PH-failure rule approved 2026-11-02; Test not approved
+approved_for_test_execution: false             # set true only by the researcher after reviewing the freeze manifest
+output: outputs/final_test/
+
+settings:
+  # Data and cohort
+  datasets: {mitdb: "1.0.0", nstdb: "1.0.0"}
+  split: outputs/split_assignment.csv                         # [S0] immutable 22/21 subject split, seed 20261031
+  g_star_ms: 250                                              # [S0]
+  test_events_source: outputs/test/event_audit_test.parquet   # g = 250, in_common_cohort; membership only
+  expected_test_events: 81                                    # validated from the Stage 0 audit 2026-11-02
+  expected_test_subjects: 11                                  # records 201 and 202 are one subject (S201)
+  test_subjects: [S100, S106, S114, S119, S200, S201, S203, S205, S223, S228, S230]
+
+  # Clean windows and PH (unchanged Stage 1 science)
+  ph_parameters_from: configs/stage1.yaml                     # [S1] 300 points, tau 28, m 5, full VR to dim 2, cubical
+  normalization: topovital_stage1.core.normalize_window       # [S1]
+
+  # Regime 1 artefacts on Test
+  regime1_parameters_from: configs/stage1_regime1.yaml        # [S1] types, SNRs, taper, mean removal, scaling, tolerance
+  noise_types: [bw, ma, em]
+  snr_db: [24, 18, 12, 6, 0, -6]
+  test_noise_allocation:
+    block: [325000, 650000]                                   # [P§5] NSTDB Test block (second half), never read so far
+    grid_step_samples: 1800
+    snippet_samples: 1800
+    seed: 20261031
+    rule: non_overlapping_grid_seeded_permutation_test_block  # [PI] U-01 approved 2026-11-02: Development C-02 rule on the
+                                                              # Test block; events sorted by event_id; independent permutation
+                                                              # per noise type; one snippet per (event, noise type) reused
+                                                              # across C2/C3 and all SNRs
+  noise_channel_rule: match_ecg_signal_index                  # [PI] U-02 approved 2026-11-02: NSTDB channel = MLII signal
+                                                              # index; only record 114 (MLII on index 1) uses noise2. The
+                                                              # noise1/noise2 difference for 114 is recorded descriptively
+                                                              # and never used to change models, thresholds or features.
+
+  # Models, all trained on Development only (Level 3 final models, analysis code version 1, 1 BLAS thread)
+  primary_comparison: classical_plus_ph - classical_only
+  secondary_comparisons:
+    - classical_plus_ph - ph_only
+    - classical_only - ph_only
+    - classical_only - classical_only_no_boundary
+    - classical_plus_ph - classical_plus_ph_no_boundary
+    - classical_plus_ph_no_boundary - classical_only_no_boundary
+  models_from: outputs/stage1_analysis/development/level3/final_models/   # five .npz, SHA256 from level3_full_run_postrun.json
+  selection_record: outputs/stage1_analysis/development/level3/dev_selection_record.json
+  thresholds: {primary: "F-03 weighted C1/C3 90 % rule (threshold_primary)", c1: "90 % C1 sensitivity (threshold_c1)"}
+  test_time_fitting: none                                     # no refit, recalibration or threshold change on Test
+  g06_ablation_models: exploratory_only_not_evaluated
+
+  # Estimands
+  primary_estimand: "patient-equal-weight stratified AUROC of classical_plus_ph - classical_only, 95 % subject-cluster bootstrap CI"
+  secondary_estimands: [stratified_auroc per model, c0_fpr, c2_fpr, c1_sensitivity, c3_sensitivity,
+                        per-cell AUROC, protocol 9-cell summary, auroc_c2_vs_c0, auroc_c3_vs_c1,
+                        paired score changes, window-level metrics, per-subject metrics]
+  threshold_rules_reported: [primary, c1]                    # reported separately; never compared across rules
+  bootstrap: {clusters: test_subjects, resamples: 1000, seed: 20261031}
+
+  # Failure rules (fixed before Test; never a reason to change science after inspection)
+  failures:
+    ph_job_failure: "[PI] 2026-11-02: Not Evaluable policy kept; every failure logged (event, condition, subject, reason); primary metrics and paired comparisons use the common evaluable set (all five models scored); per-model all-available metrics reported as secondary; exclusions reported by subject"
+    classical_nan: "imputed with the saved Development medians (as in training)"
+    empty_diagram: "valid input; PI is the zero image (as in Development)"
+    missing_class_in_subject: "metric not evaluable for that subject; reason recorded; subject kept for other metrics"
+    invalid_bootstrap_draw: "counted as non-evaluable; CI reported only if >= 95 % of draws are evaluable (as in Development)"
+    hardware_or_reproducibility_failure: "quarantine outputs, write incident_report.json, request approval before any rerun with unchanged settings"
+
+  # Numerical environment
+  analysis_code_version: "2.0.0"                              # BLAS threads set before numpy import and verified
+  blas_threads: 1
+  workers: 4
+  memory_abort_bytes_per_vr_job: 6000000000                   # [S1] unchanged

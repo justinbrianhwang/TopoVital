@@ -1,0 +1,196 @@
+{
+  "final_code_hash": "2a9a664f958dae6373cb879dedd3e0031eddc3d9186b0503175e1da3d44879c1",
+  "analysis_code_hash": "66c502e825594470b8a15bff8625d483362478277f6553d39df4a3581a5ad67f",
+  "stage1_code_hash": "7b40c8c7bedbe193e4cb5d5eddd545baec365eafda39d3bb560cdb45a8b372fe",
+  "stage0_code_hash": "683f4559efa4533d14a07d25b282210068d798c8f167fe0dfbef0848afeefa8b",
+  "analysis_code_version": "2.0.0",
+  "final_test_settings_sha256": "3c9f68ceed215718e9f39c25b958ac86110434da9e958db6a189f4ff4a416f13",
+  "files": {
+    "configs/stage0.yaml": "449d4096bb108ce834cc2fa334c38f1b94044fbf86dfc290e88e82f7e49fc4b7",
+    "configs/stage1.yaml": "67e1b73a1717237f1301e7c0fe74549f73fa19cc5dd2fa65e8fb209ec005eec8",
+    "configs/stage1_regime1.yaml": "e682a818822dd46a10d142936f2de4fa9e37e804c29ff3e99293a656d47e6140",
+    "configs/stage1_analysis.yaml": "f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b",
+    "configs/stage1_factorial.yaml": "2e3b300070616eabff0d2eae1230645256110e98ef97cd531853d276630b3462",
+    "configs/stage1_level3.yaml": "eed25fae02186089b930ff53ce281ea095e32e98ff461f5acc396038c25ab064",
+    "outputs/stage1_features/development/snippet_allocation.csv": "671aab191f5eb35f236cf671988e8364155d2f6030f44956141be44f12bf5fe5",
+    "outputs/final_test/test_noise_allocation.csv": "b873cd7ceea366a1c9ebacc73103fddc6a85d6003ddfe6e890ca806b2541110c",
+    "outputs/final_test/test_event_manifest.csv": "5332a4508fbb96df780661713054702336acdd9ffdcf66547f8731e2fbb9c2d5",
+    "outputs/split_assignment.csv": "2d2d2dc0d307ae3c42787939871bce4a000f8b2a0db5bc41fec080489f7c2a4f",
+    "outputs/stage1_analysis/development/level3/dev_selection_record.json": "ef02efab972d9578952c506c9d48cb2b302ba3f39658f219cac572c5805b5085",
+    "outputs/stage1_analysis/development/level3/final_models/classical_only.npz": "c86dd6d4b9b9ccc438ddda3d09e2b8891dda31bd3ad8594189360bceeeff7374",
+    "outputs/stage1_analysis/development/level3/final_models/classical_only_no_boundary.npz": "2f8cf1dd1070e5a1b7303243a1fb4f033eeb8a06d090d88b3098ae5f5fa3441c",
+    "outputs/stage1_analysis/development/level3/final_models/classical_plus_ph.npz": "652a7bcc47a14ff8619df1e020d3d0499b4b06177b8a30640607950bc8cc170a",
+    "outputs/stage1_analysis/development/level3/final_models/classical_plus_ph_no_boundary.npz": "3833529ec7b253ba8250080b4dd9da1a1009de717083e07e2068c9377d67bc38",
+    "outputs/stage1_analysis/development/level3/final_models/ph_only.npz": "1332bcd9f32b29a41118e27a79b377880a52e6aa68464b3d675932addb58d565"
+  },
+  "raw_data": {
+    "mit-bih-arrhythmia-database-1.0.0/100.atr": "8d8a5349fb16638ebbf649f1779d12e96d91b736b2aafe59db43719ae583d471",
+    "mit-bih-arrhythmia-database-1.0.0/100.dat": "b2ea3c250e56e48f4b7b90697832b8ecd1afa1e0bb31f2dcfea4ed6e1075a639",
+    "mit-bih-arrhythmia-database-1.0.0/100.hea": "60ebc904c7bf3e04d142638d3fd5c903e8dc9f10f1ea3264e07926aa089ee75e",
+    "mit-bih-arrhythmia-database-1.0.0/106.atr": "585347e6d1bd3ad89cdb52cb80945878a5e51026d81f871a376bb6e13936f7fa",
+    "mit-bih-arrhythmia-database-1.0.0/106.dat": "c017bc18b95b1f970bca143a044ee5d54168648b541e47aa656f2737a59c1202",
+    "mit-bih-arrhythmia-database-1.0.0/106.hea": "ad5ed3ee5603926a07a09f0d0c9e2a7ff10a705dbafcde3d185317730a8839ab",
+    "mit-bih-arrhythmia-database-1.0.0/114.atr": "5280acb082b654d64944137987a00fbc2105b3a3fcdda75d0bf11d4644e40d9f",
+    "mit-bih-arrhythmia-database-1.0.0/114.dat": "2ae83463edcfec256b79ce93716dcb40f289bacbe9e5e7a66cd00d0a31099d4b",
+    "mit-bih-arrhythmia-database-1.0.0/114.hea": "830ba89cebf60945db0c78332e3cc6c64acbe218f6f16594660d4f17423ee889",
+    "mit-bih-arrhythmia-database-1.0.0/119.atr": "fd919c8ea20eed4a22fb37984977f30ce48d382eefd2d90934bf947a88e0fd7b",
+    "mit-bih-arrhythmia-database-1.0.0/119.dat": "02a286a28e69b441568add915f16a2856b22bab893bf8729ee9654411ed3a5aa",
+    "mit-bih-arrhythmia-database-1.0.0/119.hea": "658f01382d7280a06e2f4c06363569d477394a6898c69ee788bb383f6092df63",
+    "mit-bih-arrhythmia-database-1.0.0/200.atr": "f9624a11696760427d75314a78c31f89ca3c446af855890c8f8b66cddd8b3a3f",
+    "mit-bih-arrhythmia-database-1.0.0/200.dat": "a9e203b3807b9fcd3647cde03444437cb8eec7f5128a8eb413edafb394272e0f",
+    "mit-bih-arrhythmia-database-1.0.0/200.hea": "9e0c2ff5b790cf624deab0ccb8a9f211a9e29a748d8197da3c1ee7c5b596b40c",
+    "mit-bih-arrhythmia-database-1.0.0/201.atr": "df1276b6c6952b177ec6eea2be3edc7a96888454107a3ee56be880b0afaf6f35",
+    "mit-bih-arrhythmia-database-1.0.0/201.dat": "16610ae46eff900794597503d15af4572a8b1518f18dbed2843b7e68c81f3898",
+    "mit-bih-arrhythmia-database-1.0.0/201.hea": "dba34d6252879af28c1d10cde200989a4f6507d98df4395f5cba5f81af5b7e5a",
+    "mit-bih-arrhythmia-database-1.0.0/202.atr": "16d59e44564844c39a648164580a69e71f1657e951e6ad121b64eb1a11db037d",
+    "mit-bih-arrhythmia-database-1.0.0/202.dat": "0c990e4142de6be898de4b21bd6e6705cd567e5d97cb731a994dc5aee9c7142d",
+    "mit-bih-arrhythmia-database-1.0.0/202.hea": "6822216d1bc51f7014637c53e543cdc3863fea4ee3fec3aa99fb0762aece0cba",
+    "mit-bih-arrhythmia-database-1.0.0/203.atr": "2573f948e54a538983a44bf946e3e61cdda60e898b4c65ca8559b57c4877c706",
+    "mit-bih-arrhythmia-database-1.0.0/203.dat": "5ba7d2237fc838438efd8bb0a3baeffc5de2e70c76e3ab7e401e811ad82f43e0",
+    "mit-bih-arrhythmia-database-1.0.0/203.hea": "25b3a3107dd00221b245ef5c23ffdfbd07caaf58e2cf377734f3a947361b26a5",
+    "mit-bih-arrhythmia-database-1.0.0/205.atr": "0ae55e31175b9ba36e09c3b556b15e3e70f254936a2634d5ff341dfb86a74ea9",
+    "mit-bih-arrhythmia-database-1.0.0/205.dat": "8a513c39e6d9a1d732de0b3909a87aa1fcfd4bd55ab5f59a5b810967d252af36",
+    "mit-bih-arrhythmia-database-1.0.0/205.hea": "739f76bbcbbfdad1f260a043a5f7106f6e912894065b15ea75bee42af0380a2a",
+    "mit-bih-arrhythmia-database-1.0.0/223.atr": "beaa5cb3eb5fb64a5f9e1dfcac9297f9564b379c9c354cbf8f9f927d9b81ccf1",
+    "mit-bih-arrhythmia-database-1.0.0/223.dat": "1d42aa9e13f7349287ae5f0f00b40078c01aadd39e2cad1001ab42d3b7484594",
+    "mit-bih-arrhythmia-database-1.0.0/223.hea": "bbd414e57b6eafa53204fb7eeb1212c9d47f598f36e8838b103bfb68a316ca85",
+    "mit-bih-arrhythmia-database-1.0.0/228.atr": "7e08ee90f668800fb3e1a66193fb8f8b4b91c3ec2f52f384756bab826e019d1d",
+    "mit-bih-arrhythmia-database-1.0.0/228.dat": "b2421f15447772bb7a38f5073e4e07d5d9be50d875441a4a0821c9e22b78fdac",
+    "mit-bih-arrhythmia-database-1.0.0/228.hea": "b4a2796ca39816b32d5b24c2c1d0a2aa355d159aafd7ecbfb1cdf11a695a14d8",
+    "mit-bih-arrhythmia-database-1.0.0/230.atr": "403d0d4842ba7135b1e14b9e5c50cba214753a0e17bf979090b2c6a8018f7eae",
+    "mit-bih-arrhythmia-database-1.0.0/230.dat": "fba09ea54d9caa342c54c46e0df247335345b02444f7d15162906adfef55d057",
+    "mit-bih-arrhythmia-database-1.0.0/230.hea": "5738bb479316dcc324b27807bbbffd8878da6156707c6cfbc08dcd0fa4771671",
+    "mit-bih-noise-stress-test-database-1.0.0/bw.dat": "15f68280aba8b006f5497c14da44b558e68caaabc2afc5c4b710eea779b7512c",
+    "mit-bih-noise-stress-test-database-1.0.0/bw.hea": "e3ea3b09fb8d65877cf6ae4dec213b9693243c435333a150c14f6b551f7b7d61",
+    "mit-bih-noise-stress-test-database-1.0.0/em.dat": "4f9416a04b2bed98081ee3118c1282f9e35321bfd5da96ce48056a3fe147358d",
+    "mit-bih-noise-stress-test-database-1.0.0/em.hea": "0bdfa989de0dd06486159f2c36bd80abd684d951c3930daea2ee46572fd20d49",
+    "mit-bih-noise-stress-test-database-1.0.0/ma.dat": "40bda613a3e65adb277df1b72f8a41d2c1c2e0131ea4ec1e03cf1e2cd68199c4",
+    "mit-bih-noise-stress-test-database-1.0.0/ma.hea": "c3751bb8d327b83158f3e4a81f821518a71d1ae8566189b098baa47fb89afaa7"
+  },
+  "input_checksums_sha256": "a36548b10a37f0bb6a2f6cfa885030005f5da2871b42b493d2d878d28bcf4c84",
+  "decisions": {
+    "U-01": {
+      "rule": "non_overlapping_grid_seeded_permutation_test_block",
+      "approval_date": "2026-11-02"
+    },
+    "U-02": {
+      "rule": "match_ecg_signal_index",
+      "approval_date": "2026-11-02",
+      "per_record_channels": [
+        {
+          "record_id": "100",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        },
+        {
+          "record_id": "106",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        },
+        {
+          "record_id": "114",
+          "mlii_channel_index": 1,
+          "nstdb_channel": 1,
+          "nstdb_channel_name": "noise2"
+        },
+        {
+          "record_id": "119",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        },
+        {
+          "record_id": "200",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        },
+        {
+          "record_id": "201",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        },
+        {
+          "record_id": "202",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        },
+        {
+          "record_id": "203",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        },
+        {
+          "record_id": "205",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        },
+        {
+          "record_id": "223",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        },
+        {
+          "record_id": "228",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        },
+        {
+          "record_id": "230",
+          "mlii_channel_index": 0,
+          "nstdb_channel": 0,
+          "nstdb_channel_name": "noise1"
+        }
+      ]
+    },
+    "ph_failure_policy": "not_evaluable_with_common_set"
+  },
+  "record_114": {
+    "in_test": true,
+    "subject_id": "S114",
+    "n_events": 18,
+    "nstdb_channel": 1
+  },
+  "thresholds": {
+    "classical_only": {
+      "threshold_primary": 0.4048020081579449,
+      "threshold_c1": 0.4048020081579449
+    },
+    "ph_only": {
+      "threshold_primary": 0.2327430102388483,
+      "threshold_c1": 0.24967429585304962
+    },
+    "classical_plus_ph": {
+      "threshold_primary": 0.3539046631415617,
+      "threshold_c1": 0.36498620264532444
+    },
+    "classical_only_no_boundary": {
+      "threshold_primary": 0.375718069250128,
+      "threshold_c1": 0.37751648921507136
+    },
+    "classical_plus_ph_no_boundary": {
+      "threshold_primary": 0.2903912410160225,
+      "threshold_c1": 0.45666645875815354
+    }
+  },
+  "package_versions": {
+    "numpy": "2.5.4",
+    "pandas": "2.3.3",
+    "scipy": "1.18.1",
+    "scikit-learn": "1.9.1",
+    "gudhi": "3.13.0",
+    "wfdb": "4.3.1",
+    "neurokit2": "0.2.13",
+    "PyWavelets": "1.10.0",
+    "pyarrow": "26.0.0",
+    "threadpoolctl": "3.7.0"
+  }
+}

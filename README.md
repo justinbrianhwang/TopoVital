@@ -426,6 +426,92 @@ unchanged from the factorial analysis; only the input features differ.
   runs, marking confirmed and inferred values separately.
 - **Not stored:** `final_models/` is not stored in the repository.
 
+## Stage 1 analysis, G-06 feature-group ablation (Development, exploratory)
+
+**Design.**
+- Config: [`configs/stage1_g06_ablation.yaml`](configs/stage1_g06_ablation.yaml); analysis code 2.0.0; 1 BLAS thread,
+  verified at runtime.
+- Each of seven classical feature groups was removed from `classical_only` and from `classical_only_no_boundary`,
+  giving 14 ablated models:
+
+  | Group | Content |
+  |---|---|
+  | A | rhythm |
+  | B | QRS/template |
+  | C | amplitude |
+  | D | DWT |
+  | E | PSD |
+  | F | spectral entropy |
+  | G | SQI |
+
+- Each ablated model was refitted with the Level 3 nested LOSO, C grid and threshold rules.
+- The two reference models were refitted first. They reproduce the Level 3 out-of-fold scores, thresholds and
+  selected C exactly (maximum difference 0.0).
+- The run had 7,360 fits and 0 convergence warnings.
+
+**Results.** The table gives the subject-equal stratified AUROC under the primary rule, as reference minus ablated
+model, with 95 % subject-cluster bootstrap CIs (1,000 resamples).
+
+| Removed group | From `classical_only` (0.925) | From `classical_only_no_boundary` (0.886) |
+|---|---|---|
+| QRS/template | 0.062 [−0.002, 0.152] | 0.029 [−0.037, 0.095] |
+| Rhythm | 0.037 [−0.011, 0.108] | 0.001 [−0.027, 0.031] |
+| SQI | 0.018 [0.003, 0.039] | −0.001 [−0.017, 0.015] |
+| Amplitude | 0.010 [−0.004, 0.029] | −0.010 [−0.028, 0.003] |
+| DWT | 0.010 [−0.011, 0.036] | 0.011 [−0.027, 0.061] |
+| PSD | 0.002 [−0.004, 0.012] | −0.011 [−0.030, 0.005] |
+| Spectral entropy | −0.000 [−0.002, 0.002] | −0.014 [−0.040, −0.000] |
+
+- Removing the QRS/template, rhythm or DWT group raised C0 FPR (from 0.218 to 0.38–0.46) and C2 FPR (from 0.372 to
+  0.52–0.58) in `classical_only`. All of these CIs exclude 0.
+- **Interpretation:** the classical model relies mainly on beat-morphology and rhythm features.
+- **Boundary dependence:** no group removal from the no-boundary model lowered AUROC with a CI excluding 0.
+- **Use of the results:** the analysis is exploratory. No feature set was selected from it, and no model used for
+  the final Test changed.
+
+**Outputs.** [`outputs/stage1_analysis/development/g06_ablation/`](outputs/stage1_analysis/development/g06_ablation/)
+holds:
+- the reference reproduction check;
+- paired comparisons (overall, 9-cell, per noise type and per SNR);
+- metrics, bootstrap CIs and missingness by group.
+
+## Final Test evaluation: freeze (Test not yet run)
+
+**Frozen before Test.** Everything below was fixed from Development results only.
+- Settings: [`configs/final_test_evaluation.yaml`](configs/final_test_evaluation.yaml).
+- Freeze manifest: [`outputs/final_test/final_test_freeze_manifest.json`](outputs/final_test/final_test_freeze_manifest.json).
+  It holds the SHA256 of:
+  - the configs, the five Level 3 final models and their thresholds;
+  - the code, package versions and Test membership;
+  - the noise allocation and the 42 raw MITDB/NSTDB files the Test run reads. The raw-file hashes are checked
+    against the Stage 0 `outputs/input_checksums.csv`.
+- **Test cohort:** 81 events from 11 subjects. These counts were already known from the frozen Stage 0 run.
+- **Test-time fitting:** none. There is no refit, recalibration or threshold change.
+- **Primary estimand:** subject-equal stratified AUROC of `classical_plus_ph − classical_only`.
+
+**Researcher decisions (2026-11-02).**
+- **U-01, noise allocation:** the Development C-02 rule applied to the NSTDB Test block `[325000, 650000)`:
+  - 243 non-overlapping 1,800-sample snippets;
+  - seed 20261031, events sorted by `event_id`, an independent permutation per noise type;
+  - each snippet reused across C2/C3 and all SNRs.
+- **U-02, noise channel:** `match_ecg_signal_index`. Only record 114 (S114, 18 events, MLII on signal index 1) uses
+  NSTDB noise2. Its noise1/noise2 difference is recorded descriptively only.
+- **PH failure:** the Not Evaluable policy applies, with a failure log. Primary metrics use the common evaluable set
+  (all five models scored).
+
+**Pre-Test verification (Development only).** Sanitized reports are in
+[`outputs/final_test/public/`](outputs/final_test/public/).
+- **Replay of three Development events:** the 48 PH diagrams and input hashes are identical, the SNR error is at most
+  7.1e-15, and the classical-feature difference is 0.0.
+- **Model application:** the frozen models applied to all 4,788 windows equal sklearn `predict_proba` (difference at
+  most 3.3e-16).
+- **Refit:** the five final models refitted under analysis code 2.0.0 reproduce their coefficients exactly.
+- **Estimated Test cost:** 324 clean and 2,916 injected PH jobs, about 13.9 CPU hours (about 3.5 h with 4 workers);
+  about 490 MB per PH job.
+
+The Test run is gated. `python -m topovital_final run-test` refuses to start unless the researcher sets
+`approved_for_test_execution: true` and the freeze manifest validates.
+
 ## Installation
 
 Developed and tested on Python 3.14 (Windows 11). Other Python versions have not been verified.

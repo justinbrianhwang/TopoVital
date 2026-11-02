@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 
 import tools.make_public_copies as public_copies
-from tools.make_public_copies import (make_level3_public_copy, make_public_copies, public_frame,
+from tools.make_public_copies import (make_final_test_public_copy, make_level3_public_copy, make_public_copies, public_frame,
                                       repo_relative_path, residual_hits)
 from topovital.util import sha256_file
 
@@ -133,3 +133,89 @@ def test_cli_defaults_to_regime1_and_level3_flag_selects_level3(monkeypatch, cap
     public_copies.main(["--level3"])
     assert calls == ["regime1", "level3"]
     assert "Wrote 1 public CSVs" in capsys.readouterr().out
+
+    monkeypatch.setattr(public_copies, "make_final_test_public_copy",
+                        lambda: calls.append("final-test") or {"files": {"a": {}, "b": {}}})
+    public_copies.main(["--final-test"])
+    assert calls == ["regime1", "level3", "final-test"]
+    assert "Wrote 2 public files" in capsys.readouterr().out
+
+
+def test_final_test_public_copy_rewrites_unicode_root_paths(tmp_path):
+    if os.name == "nt":
+        tmp_path = Path("\\\\?\\" + str(tmp_path))
+    root = tmp_path / "Zo챘_횥nal" / "TopoVital"
+    verification = root / "outputs/final_test/dev_verification_2"
+    replay = verification / "replay"
+    replay.mkdir(parents=True)
+    private = str(root / "outputs/final_test/dev_verification_2/replay/jobs/a.npz")
+    report = verification / "dev_verification_report.json"
+    report.write_text(json.dumps({"checks": [{"value": {
+        "path": private,
+        "no_test_outputs": {"value": {"jobs_content": {private: "sha256"}}},
+    }}]}), encoding="utf-8")
+    ledger = replay / "jobs_ledger.csv"
+    ledger.write_text(f"job_path,status\n{private},ok\n", encoding="utf-8")
+    before = {path: path.read_bytes() for path in (report, ledger)}
+
+    manifest = make_final_test_public_copy(root)
+
+    for path, content in before.items():
+        assert path.read_bytes() == content
+    public = root / "outputs/final_test/public/dev_verification_2"
+    copied_report = json.loads((public / report.name).read_text(encoding="utf-8"))
+    public_path = "outputs/final_test/dev_verification_2/replay/jobs/a.npz"
+    assert copied_report["checks"][0]["value"]["path"] == public_path
+    jobs_content = copied_report["checks"][0]["value"]["no_test_outputs"]["value"]["jobs_content"]
+    assert jobs_content == {public_path: "sha256"}
+    copied_ledger = pd.read_csv(public / "replay/jobs_ledger.csv")
+    assert copied_ledger.job_path.iloc[0] == public_path
+    assert len(manifest["files"]) == 2
+    for public_path, entry in manifest["files"].items():
+        assert sha256_file(root / entry["source_path"]) == entry["source_sha256"]
+        assert sha256_file(root / public_path) == entry["public_sha256"]
+
+
+def test_final_test_public_copy_rejects_rewritten_key_collision(tmp_path):
+    if os.name == "nt":
+        tmp_path = Path("\\\\?\\" + str(tmp_path))
+    root = tmp_path / "TopoVital"
+    verification = root / "outputs/final_test/dev_verification"
+    replay = verification / "replay"
+    replay.mkdir(parents=True)
+    private = str(root / "outputs/final_test/jobs/a.npz")
+    relative = "outputs/final_test/jobs/a.npz"
+    (verification / "dev_verification_report.json").write_text(
+        json.dumps({"jobs_content": {private: "first", relative: "second"}}), encoding="utf-8")
+    (replay / "jobs_ledger.csv").write_text("job_path\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="keys collide"):
+        make_final_test_public_copy(root)
+
+    assert not (root / "outputs/final_test/public/PUBLIC_MANIFEST.json").exists()
+
+
+@pytest.mark.parametrize("source_name", ["dev_verification_report.json", "replay/jobs_ledger.csv"])
+def test_final_test_public_copy_rejects_residual_root(tmp_path, source_name):
+    if os.name == "nt":
+        tmp_path = Path("\\\\?\\" + str(tmp_path))
+    root = tmp_path / "TopoVital"
+    verification = root / "outputs/final_test/dev_verification"
+    replay = verification / "replay"
+    replay.mkdir(parents=True)
+    private = str(root / "outputs/final_test/jobs/a.npz").swapcase()
+    report = verification / "dev_verification_report.json"
+    ledger = replay / "jobs_ledger.csv"
+    report.write_text(json.dumps({"note": "prefix=" + private}), encoding="utf-8")
+    ledger.write_text("note\nprefix=" + private.replace("\\", "/") + "\n", encoding="utf-8")
+    if source_name == "dev_verification_report.json":
+        ledger.write_text("note\nclean\n", encoding="utf-8")
+    else:
+        report.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="Residual project root"):
+        make_final_test_public_copy(root)
+
+    public = root / "outputs/final_test/public"
+    assert (public / "dev_verification" / source_name).exists()
+    assert not (public / "PUBLIC_MANIFEST.json").exists()

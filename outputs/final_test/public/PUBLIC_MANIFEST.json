@@ -1,0 +1,24 @@
+{
+  "files": {
+    "outputs/final_test/public/dev_verification/dev_verification_report.json": {
+      "source_path": "outputs/final_test/dev_verification/dev_verification_report.json",
+      "public_sha256": "d033bb3be55997de84e639c7da7d7b890a37b0b445e3ebbb4914a02af0f4e776",
+      "source_sha256": "dcd388ba2773a1cf1418dbeb3514c472309385d9a2191a037c7638cc735f6618"
+    },
+    "outputs/final_test/public/dev_verification/replay/jobs_ledger.csv": {
+      "source_path": "outputs/final_test/dev_verification/replay/jobs_ledger.csv",
+      "public_sha256": "e0d050952db296c30c4b6c520848408cfa39ffa686dc2db7477a5bb25e228457",
+      "source_sha256": "e0d050952db296c30c4b6c520848408cfa39ffa686dc2db7477a5bb25e228457"
+    },
+    "outputs/final_test/public/dev_verification_frozen/dev_verification_report.json": {
+      "source_path": "outputs/final_test/dev_verification_frozen/dev_verification_report.json",
+      "public_sha256": "e525c7bede9eb923ff98fe65211e7eedfa058f9863485ca8713bc0a90f6a40db",
+      "source_sha256": "e525c7bede9eb923ff98fe65211e7eedfa058f9863485ca8713bc0a90f6a40db"
+    },
+    "outputs/final_test/public/dev_verification_frozen/replay/jobs_ledger.csv": {
+      "source_path": "outputs/final_test/dev_verification_frozen/replay/jobs_ledger.csv",
+      "public_sha256": "da22d6c8f7a59df383c901c1a03caebe6c0e096f29c7d4e327bf18946b5ff657",
+      "source_sha256": "da22d6c8f7a59df383c901c1a03caebe6c0e096f29c7d4e327bf18946b5ff657"
+    }
+  }
+}

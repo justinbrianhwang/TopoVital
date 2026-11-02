@@ -3,7 +3,7 @@
 # run configuration. Its `pending:` block (perturbations_regimes_1_3: null, ...) predates the Regime 1 run;
 # this file is the authoritative progress record and supersedes that block.
 
-as_of_utc: "2026-11-01T23:30:00Z"
+as_of_utc: "2026-11-02T13:30:00Z"
 
 stage0:
   status: frozen
@@ -116,10 +116,23 @@ stage1:
     audit: outputs/stage1_analysis/development/level3_audit/
     result_primary_rule: "subject-equal stratified AUROC: classical_only 0.925, classical_plus_ph 0.899, classical_only_no_boundary 0.886, classical_plus_ph_no_boundary 0.904, ph_only 0.521"
     conclusion: "adding PH did not improve PVC detection over classical features (difference -0.026, 95% CI -0.091 to 0.021); boundary features raise classical-only AUROC by 0.039 (CI -0.003 to 0.085), interpreted as possible alignment shortcut, not removed by the no-boundary models"
-    ablation_g06: not_started       # after review of the main comparison
+    ablation_g06:
+      status: complete              # exploratory only; no Development feature selection; configs/stage1_g06_ablation.yaml (79564afe...)
+      fits: 7360                    # 0 convergence warnings; wall 8977 s; peak RSS 538 MB; analysis code 2.0.0, 1 BLAS thread verified
+      reference_reproduction: "classical_only and classical_only_no_boundary refits equal Level 3 exactly (OOF max diff 0.0)"
+      outputs: outputs/stage1_analysis/development/g06_ablation/
+      result: "largest subject-equal AUROC drops from classical_only: QRS/template 0.062 (CI -0.002 to 0.152), rhythm 0.037 (-0.011 to 0.108), SQI 0.018 (0.003 to 0.039); removing QRS/template, rhythm or DWT raises C0 and C2 FPR"
     thread_bug_fix: "analysis code version 2.0.0 (code hash bb5d4d5d...): thread variables set before numpy import and verified at runtime; version 1 ends at 2f6a3586...; regression test reproduces the Level 3 1-thread S210 ph_only OOF exactly"
   decision_threshold: not_started
 
 test_split:
   stage0: processed_once_with_frozen_config   # 2026-10-31, run_id 20261031T203554Z_a8af0552 (deviation F-02)
   stage1: locked                              # no Stage 1 computation has read Test records or the NSTDB Test block
+  final_test:
+    status: frozen_pending_test_approval        # U-01, U-02 and the PH-failure rule approved 2026-11-02; Test execution not approved
+    settings: configs/final_test_evaluation.yaml
+    freeze_manifest: outputs/final_test/final_test_freeze_manifest.json   # sha256 c7530226f005278a099771ab88e3af5a124202a53d803c5928bfb80fa34e6d69
+    membership: outputs/final_test/test_event_manifest.csv                # 81 events, 11 subjects; Stage 0 audit columns only
+    noise_allocation: outputs/final_test/test_noise_allocation.csv        # 243 snippets in [326800, 649000); positions only
+    dev_verification: "outputs/final_test/public/dev_verification_frozen/: all checks passed, 0 pending"
+    test_ph_or_scores_computed: false
