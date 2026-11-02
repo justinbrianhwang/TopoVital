@@ -20,6 +20,7 @@ from .level2 import run_level2
 from .factorial import run_factorial
 from .classical_features import run_level3_features
 from .level3 import run_level3
+from .g06_ablation import run_g06_ablation
 from .runtime import ANALYSIS_CODE_VERSION, verify_blas_threads
 
 
@@ -40,9 +41,27 @@ def main(argv=None) -> int:
     level3_features.add_argument("--workers", type=int, default=1)
     level3 = sub.add_parser("level3")
     level3.add_argument("--pilot", action="store_true")
+    sub.add_parser("g06-ablation")
     args = parser.parse_args(argv)
     try:
         verify_blas_threads()
+        if args.command == "g06-ablation":
+            root = PROJECT_ROOT
+            cfg_g = load_yaml(root / "configs" / "stage1_g06_ablation.yaml")
+            if not cfg_g["approved_for_full_run"]:
+                raise BlockedError("G-06 full run requires approved_for_full_run")
+            cfg_l3 = load_yaml(root / "configs" / "stage1_level3.yaml")
+            cfg_f = load_yaml(root / "configs" / "stage1_factorial.yaml")
+            cfg_a = load_yaml(root / "configs" / "stage1_analysis.yaml")
+            events = load_dev_events(root / "outputs" / "development" / "event_audit_dev.parquet",
+                                     root / "outputs" / "split_assignment.csv")
+            out = root / cfg_g["output"]
+            run_id = new_run_id(config_hash({"g06": cfg_g, "level3": cfg_l3, "factorial": cfg_f, "analysis": cfg_a}))
+            with profiled(root / "outputs", run_id, "stage1 analysis g06 ablation", n_jobs=1) as record:
+                summary = run_g06_ablation(events, cfg_g, cfg_l3, cfg_f, cfg_a, root, out)
+                record["note"] = f"fits={summary['fits']}; outer_folds={summary['outer_folds']}{_PROFILE_NOTE_SUFFIX}"
+            print(f"G-06 ablation: {summary['fits']} fits; output={out.relative_to(root).as_posix()}")
+            return 0
         if args.command in ("level3-features", "level3"):
             root = PROJECT_ROOT
             cfg_l3 = load_yaml(root / "configs" / "stage1_level3.yaml")

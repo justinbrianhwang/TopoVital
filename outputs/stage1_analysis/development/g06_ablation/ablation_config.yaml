@@ -1,0 +1,59 @@
+# TopoVital Stage 1 G-06: exploratory feature-group ablation of the Level 3 classical models, Development only.
+# Source tags: [APPROVED G-06] approved by the principal investigator on 2026-11-02 (Level 3 design) and authorized for
+# implementation and the full Development run on 2026-11-02 · [L3] inherited unchanged from configs/stage1_level3.yaml.
+# Exploratory: results are selection-prone. No ablated model is a candidate for the Test evaluation.
+# Inputs are read-only: level3_features/classical_features.parquet (hash-checked) and the Level 3 outputs.
+
+inherit_from:
+  level3: configs/stage1_level3.yaml           # features, missing values, imputation, models' classifier and grid
+  factorial: configs/stage1_factorial.yaml     # weights F-01, selection F-02, thresholds F-03, bootstrap
+  analysis: configs/stage1_analysis.yaml       # C grid, tie break, scope
+
+status: approved_full_development_run
+approved_for_full_run: true                    # [PI] 2026-11-02, Final Experiments prompt, workstream A
+output: outputs/stage1_analysis/development/g06_ablation/
+analysis_code_version_required: "2.0.0"        # BLAS threads set before numpy import and verified at runtime
+
+feature_groups:                                # exact membership, matched by column prefix; every classical column in exactly one group
+  A_rhythm: {prefixes: ["rhythm__"], indicators: [rhythm_pre_missing, rhythm_post_missing]}
+  B_qrs_template: {prefixes: ["qrs__", "template__"],
+                   indicators: [qrs_pre_missing, qrs_post_missing, template_pre_missing, template_post_missing]}
+  C_amplitude: {prefixes: ["amplitude__"], indicators: []}
+  D_dwt: {prefixes: ["dwt__"], indicators: []}
+  E_psd: {prefixes: ["psd__"], indicators: []}
+  F_spectral_entropy: {prefixes: ["spectral_entropy__"], indicators: []}
+  G_sqi: {prefixes: ["sqi__"], indicators: []}  # pSQI and basSQI are computed from the Welch PSD but belong to G
+  boundary: {prefixes: ["boundary__"], indicators: [boundary_missing]}   # not ablated; defines the two references
+expected_column_counts: {A_rhythm: 11, B_qrs_template: 19, C_amplitude: 9, D_dwt: 18, E_psd: 18,
+                         F_spectral_entropy: 3, G_sqi: 15, boundary: 4, total: 97}
+
+references:                                    # read-only Level 3 results; re-fitted once to check reproduction
+  classical_only: {groups: all}
+  classical_only_no_boundary: {groups: all_except_boundary}
+reference_reproduction: {compare: [oof_score, threshold_primary, threshold_c1, selected_C, inner_candidate_scores],
+                         tolerance_abs: 1.0e-12, on_mismatch: stop}
+
+ablations:                                     # leave one group out from each reference: 14 models
+  remove: [A_rhythm, B_qrs_template, C_amplitude, D_dwt, E_psd, F_spectral_entropy, G_sqi]
+  from: [classical_only, classical_only_no_boundary]
+  naming: "<reference>__minus_<group>"
+  not_applicable_rule: "a removal that leaves no column or removes no column is marked not_applicable, not fitted"
+
+training:                                      # [L3] unchanged
+  cross_validation: nested_leave_one_subject_out   # same 10 outer and 9 inner folds as Level 3
+  weights: F-01
+  selection: F-02 stratified AUROC, tie break smaller C
+  c_grid: [0.001, 0.01, 0.1, 1, 10]             # unchanged; not tuned on ablation results
+  imputation_and_scaling: training_fold_only
+  thresholds: [primary, c1]                    # F-03, from training subjects' inner OOF scores
+  final_development_selection: not_run         # exploratory; no final models are produced
+
+comparisons:                                   # paired subject-cluster bootstrap, identical resamples
+  pairs: "reference - reference__minus_<group> for every ablation (14)"
+  reference_scores: level3_oof_read_only
+  scopes: [overall, protocol_9_cell, each_of_18_cells]
+  metrics: [stratified_auroc, c0_fpr, c2_fpr, c1_sensitivity, c3_sensitivity, weighted_balanced_accuracy,
+            auroc_c2_vs_c0, auroc_c3_vs_c1, paired_change_normal, paired_change_pvc]
+  bootstrap: {resamples: 1000, seed: 20261031}  # [L3]
+  p_values: none
+  interpretation: "exploratory; a drop means the group carries information not available from the remaining groups"

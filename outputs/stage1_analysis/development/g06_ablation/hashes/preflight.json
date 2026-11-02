@@ -1,0 +1,39 @@
+{
+  "code_hash": "66c502e825594470b8a15bff8625d483362478277f6553d39df4a3581a5ad67f",
+  "analysis_code_version": "2.0.0",
+  "config_sha256": {
+    "stage1_g06_ablation.yaml": "79564afebe3ab7a2b2005303053cae8ae26380b36aa7b41b4728ac327cdfb4ea",
+    "stage1_level3.yaml": "eed25fae02186089b930ff53ce281ea095e32e98ff461f5acc396038c25ab064",
+    "stage1_factorial.yaml": "2e3b300070616eabff0d2eae1230645256110e98ef97cd531853d276630b3462",
+    "stage1_analysis.yaml": "f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b"
+  },
+  "classical_features_sha256": "7c2c51f9ff6383d8c9f79c268e0728bece0c089884655b88fe872dd49a8d54f0",
+  "level3_input_sha256": {
+    "oof_predictions.parquet": "fdbcdc4b235586de8afdf831fc9a9b5afe014172436b770c08a0387eec500ec5",
+    "inner_cv_selection.csv": "e013803ba0dfa20e71168e031b3f50ac8c1a0d531ab38deffbfa502f1cbd62d4"
+  },
+  "blas_thread_report": {
+    "env": {
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1"
+    },
+    "threadpools": [
+      [
+        "openblas",
+        1
+      ],
+      [
+        "openmp",
+        1
+      ],
+      [
+        "openblas",
+        1
+      ]
+    ]
+  },
+  "head_commit": "9c558f041d703fde27473454b775dba32ac37290"
+}

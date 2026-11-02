@@ -1,0 +1,11 @@
+model,item,n_compared,max_abs_diff,all_equal,reason
+classical_only,oof_score,4788,0.0,True,
+classical_only,threshold_primary,4788,0.0,True,
+classical_only,threshold_c1,4788,0.0,True,
+classical_only,selected_C,4788,0.0,True,
+classical_only,inner_candidate_scores,50,1.1102230246251565e-16,True,
+classical_only_no_boundary,oof_score,4788,0.0,True,
+classical_only_no_boundary,threshold_primary,4788,0.0,True,
+classical_only_no_boundary,threshold_c1,4788,0.0,True,
+classical_only_no_boundary,selected_C,4788,0.0,True,
+classical_only_no_boundary,inner_candidate_scores,50,1.1102230246251565e-16,True,
