@@ -1,0 +1,5 @@
+setting,held_out_subject,resolution,sigma_pixels,C,repeat,openblas_threads,openmp_threads,OPENBLAS_NUM_THREADS_env,lbfgs_n_iter,n_windows,n_matched_level3,n_matched_factorial,max_abs_diff_vs_level3_oof,max_abs_diff_vs_factorial_oof
+default_unset,S210,10,2.0,10.0,1,12;12,12,,884,950,950,950,0.0761619985541173,0.0
+default_unset,S210,10,2.0,10.0,2,12;12,12,,884,950,950,950,0.0761619985541173,0.0
+exported_1,S210,10,2.0,10.0,1,1;1,1,1.0,832,950,950,950,0.0,0.0761619985541173
+exported_1,S210,10,2.0,10.0,2,1;1,1,1.0,832,950,950,950,0.0,0.0761619985541173

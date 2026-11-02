@@ -1,0 +1,8 @@
+item,n_compared,max_abs_diff,all_equal
+oof_score,1102,0.0,True
+threshold_primary,1102,0.0,True
+threshold_c1,1102,0.0,True
+selected_resolution,1102,0.0,True
+selected_sigma,1102,0.0,True
+selected_C,1102,0.0,True
+inner_candidate_scores,20,0.0,True

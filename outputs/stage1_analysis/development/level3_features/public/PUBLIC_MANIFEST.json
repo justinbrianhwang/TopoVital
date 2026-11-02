@@ -1,0 +1,36 @@
+{
+  "generated_utc": "2026-11-02T12:26:44Z",
+  "files": [
+    {
+      "source_path": "outputs/stage1_analysis/development/level3_features/waveform_regeneration_check.csv",
+      "source_sha256": "859bd95efaf555ee4516e831c43bc32fecb45924516d8ee88274d9435d81c84f",
+      "public_path": "outputs/stage1_analysis/development/level3_features/public/waveform_regeneration_check.public.csv",
+      "public_sha256": "2f7d580c0f2099d1894515545ea6b6760dd63d50fcfd5f56ccc370cc7aeed6db",
+      "rows": 5040,
+      "columns": 14,
+      "column_names": [
+        "event_id",
+        "subject_id",
+        "condition",
+        "noise_type",
+        "snr_target",
+        "half",
+        "job_path",
+        "passed",
+        "input_sha256_match",
+        "amplitude_min_match",
+        "amplitude_max_match",
+        "snippet_start_match",
+        "scale_a_rel_diff",
+        "snr_actual_abs_diff_db"
+      ],
+      "rewritten_columns": [
+        "job_path"
+      ],
+      "rule": "Keep the component beginning with outputs; replace path separators with '/'.",
+      "residual_check": "passed"
+    }
+  ],
+  "published_verbatim": [],
+  "note": "Original audit files are kept unchanged locally and are not published."
+}

@@ -1,6 +1,7 @@
 """Create path-sanitized publication copies of the Regime 1 audit CSVs."""
 from __future__ import annotations
 
+import argparse
 import getpass
 import io
 import os
@@ -133,10 +134,62 @@ def make_public_copies(root: Path = ROOT) -> dict:
     return manifest
 
 
-if __name__ == "__main__":
+def make_level3_public_copy(root: Path = ROOT) -> dict:
+    data_dir = root / "outputs" / "stage1_analysis" / "development" / "level3_features"
+    public_dir = data_dir / "public"
+    source_path = data_dir / "waveform_regeneration_check.csv"
+    public_path = public_dir / "waveform_regeneration_check.public.csv"
+    original_hash = sha256_file(source_path)
+    source = pd.read_csv(source_path, dtype=str, keep_default_na=False, encoding="utf-8")
+    if "job_path" not in source.columns:
+        raise ValueError(f"Missing path columns in {source_path}: ['job_path']")
+    public = source.copy(deep=True)
+    public["job_path"] = public["job_path"].map(repo_relative_path)
+    write_csv(public_path, public)
+    saved = pd.read_csv(public_path, dtype=str, keep_default_na=False, encoding="utf-8")
+    if list(saved.columns) != list(source.columns) or len(saved) != len(source) or any(
+        not saved[column].equals(source[column])
+        for column in source.columns if column != "job_path"
+    ):
+        raise ValueError(f"Non-path CSV content changed in {public_path}")
+    hits = residual_hits(saved)
+    if hits:
+        raise ValueError(f"Residual identifiers in {public_path}: {', '.join(hits)}")
+    file = {
+        "source_path": source_path.relative_to(root).as_posix(),
+        "source_sha256": original_hash,
+        "public_path": public_path.relative_to(root).as_posix(),
+        "public_sha256": sha256_file(public_path),
+        "rows": len(saved),
+        "columns": len(saved.columns),
+        "column_names": list(saved.columns),
+        "rewritten_columns": ["job_path"],
+        "rule": RULE,
+        "residual_check": "passed",
+    }
+    if sha256_file(source_path) != original_hash:
+        raise RuntimeError(f"Source changed during publication: {source_path}")
+    manifest = {
+        "generated_utc": utc_now(),
+        "files": [file],
+        "published_verbatim": [],
+        "note": "Original audit files are kept unchanged locally and are not published.",
+    }
+    atomic_write_json(public_dir / "PUBLIC_MANIFEST.json", manifest)
+    return manifest
+
+
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--level3", action="store_true", help="Publish the Level 3 waveform check only")
+    args = parser.parse_args(argv)
     try:
-        result = make_public_copies()
+        result = make_level3_public_copy() if args.level3 else make_public_copies()
         print(f"Wrote {len(result['files'])} public CSVs and PUBLIC_MANIFEST.json")
     except (OSError, ValueError, RuntimeError) as exc:
         print(f"Public copy failed: {exc}", file=sys.stderr)
         raise SystemExit(1) from exc
+
+
+if __name__ == "__main__":
+    main()

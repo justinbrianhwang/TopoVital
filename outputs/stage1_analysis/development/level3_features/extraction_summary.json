@@ -1,0 +1,22 @@
+{
+  "windows": 4788,
+  "verification_total": 5040,
+  "verification_passed": 5040,
+  "clean_pre_missing_rates": {
+    "rhythm_pre_missing": 0.0,
+    "template_pre_missing": 0.0
+  },
+  "stop_rule_threshold": 0.05,
+  "stop_rule_passed": true,
+  "wall_time_s": 310.17988130000595,
+  "peak_rss_mb": 612.96875,
+  "max_worker_rss_mb": 226.98828125,
+  "code_hash": "2f6a358682ca000d504cc44545654c21d7ebc4a73826407d72730875fe1ccd33",
+  "config_sha256": {
+    "stage1_level3.yaml": "4d677463839a0b20724f41b61f3113cf8d73e532dcb053c938465911ba19b868",
+    "stage1_analysis.yaml": "f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b",
+    "stage1_regime1.yaml": "e682a818822dd46a10d142936f2de4fa9e37e804c29ff3e99293a656d47e6140",
+    "stage0.yaml": "449d4096bb108ce834cc2fa334c38f1b94044fbf86dfc290e88e82f7e49fc4b7"
+  },
+  "classical_features_sha256": "7c2c51f9ff6383d8c9f79c268e0728bece0c089884655b88fe872dd49a8d54f0"
+}

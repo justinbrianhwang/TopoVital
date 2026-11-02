@@ -1,0 +1,35 @@
+{
+  "fits": 635,
+  "outer_fits": 635,
+  "final_selection_fits": 0,
+  "outer_folds": 1,
+  "windows": 4788,
+  "pilot": true,
+  "per_fold_time_s": {
+    "outer_S105__inner_S116": 60.9563216999959,
+    "outer_S105__inner_S123": 82.90132359998825,
+    "outer_S105__inner_S210": 64.59266170000774,
+    "outer_S105__inner_S213": 87.07362029999786,
+    "outer_S105__inner_S215": 79.91317010000057,
+    "outer_S105__inner_S219": 60.08074099999794,
+    "outer_S105__inner_S221": 79.84283599999617,
+    "outer_S105__inner_S233": 88.89216590000433,
+    "outer_S105__inner_S234": 101.75566420001269,
+    "outer_S105": 719.6735087999987
+  },
+  "fit_time_median_s": 0.639292400010163,
+  "fit_time_min_s": 0.015917299999273382,
+  "fit_time_max_s": 3.8147182000102475,
+  "fit_time_total_s": 513.6601123001165,
+  "convergence_warnings": 0,
+  "wall_time_s": 933.9923028000048,
+  "peak_rss_mb": 894.71484375,
+  "config_sha256": {
+    "stage1_level3.yaml": "4d677463839a0b20724f41b61f3113cf8d73e532dcb053c938465911ba19b868",
+    "stage1_factorial.yaml": "2e3b300070616eabff0d2eae1230645256110e98ef97cd531853d276630b3462",
+    "stage1_analysis.yaml": "f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b"
+  },
+  "code_hash": "2f6a358682ca000d504cc44545654c21d7ebc4a73826407d72730875fe1ccd33",
+  "classical_features_sha256": "7c2c51f9ff6383d8c9f79c268e0728bece0c089884655b88fe872dd49a8d54f0",
+  "ph_reproducibility_passed": true
+}

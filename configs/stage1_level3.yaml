@@ -1,0 +1,126 @@
+# TopoVital Stage 1 Level 3: classical baseline comparison, Development only.
+# Source tags: [APPROVED G-0n] approved by the principal investigator on 2026-11-02 · [F-0n] inherited unchanged from
+# configs/stage1_factorial.yaml · [L-0n] inherited unchanged from configs/stage1_analysis.yaml · [PI] condition stated
+# by the principal investigator with the approval.
+# Inputs are read-only: Stage 0 frozen files and audit tables, raw Development MIT-BIH records, the NSTDB Development
+# block, the 5,040 Stage 1 .npz job files, configs/stage1*.yaml, and the published Level 1, Level 2 and factorial outputs.
+# Training structure (windows, conditions, weights, selection metric, thresholds, nested LOSO, classifier, C grid,
+# standardization, tie break, bootstrap, final selection) is inherited unchanged; only the input features differ.
+
+inherit_from:
+  analysis: configs/stage1_analysis.yaml     # scope, inputs, persistence images, PI candidates, C grid, tie break, bootstrap
+  factorial: configs/stage1_factorial.yaml   # training task, weights F-01, selection F-02, thresholds F-03, reporting F-04
+
+status: approved_full_run            # [PI] 2026-11-02: pilot reviewed; full 10-fold nested LOSO approved, no design change
+approved_for_full_run: true          # [PI] 2026-11-02: features, models, PI candidates, C grid and thresholds unchanged
+pilot_outer_subject: S105            # same outer fold as the Level 2 and factorial pilots
+
+waveforms:                           # classical features need waveforms; the .npz files hold diagrams only
+  source: regenerate_from_raw        # Development MIT-BIH MLII records + NSTDB Development block [0, 325000)
+  injection: topovital_stage1.regime1.inject   # unchanged function, snippet_start from the Regime 1 job metadata
+  verification:                      # any mismatch blocks feature extraction
+    input_sha256: "normalized pre/post half (topovital_stage1.core.normalize_window) equals the .npz input_sha256 for all 5,040 jobs"
+    scale_a_rel_tol: 1.0e-12
+    snr_actual_abs_tol_db: 1.0e-9
+  test_data: never_read
+
+annotations:                         # [APPROVED G-02]
+  feature_computation: none          # MIT-BIH .atr files are not read for any feature (no R-peak positions, no beat labels)
+  labels_and_events: stage0_audit_only   # C0-C3 labels and event selection from the frozen Stage 0 audit tables
+  oracle_r_peaks: not_used
+
+preprocessing:
+  sampling_rate_hz: 360
+  half_samples: 1800                 # pre [0, 5 s), post [5 s, 10 s); boundary t0 = 5 s
+  signal: physical_mV
+  detection_filter: {kind: butterworth, order: 4, band_hz: [0.5, 40], phase: zero_phase_sosfiltfilt}   # Stage 0 bSQI filter
+  half_independence: "half-defined features filter and detect within that half only, so C2/C3 pre values equal C0/C1"
+  boundary_detection: "boundary features filter and detect on the full 10 s window"
+  r_peak_detector: wfdb.processing.xqrs_detect
+  r_peak_refinement: "argmax |filtered| within +-50 ms of each xqrs location"
+  spectral_input: "half minus its own mean, unfiltered"
+
+features:                            # [APPROVED G-01]
+  half_defined:                      # each value for pre, post and post - pre
+    rhythm:
+      n_beats: "detected beats in the half"
+      median_rr_s: "median RR within the half (>= 2 beats)"
+      rr_cv: "SD / median of RR within the half (>= 3 beats); log"
+    qrs:                             # neurokit2.ecg_delineate(method='dwt') on the filtered half with the refined peaks
+      median_qrs_width_ms: "median (R offset - R onset)"
+      max_qrs_width_ms: "max (R offset - R onset)"
+      median_abs_r_amplitude_mv: "median |filtered signal| at the refined peaks"
+    template:                        # pre template = sample-wise median of pre beats, segment [-250, +450] ms around R
+      segment_ms: [-250, 450]
+      segment_within_own_half: true  # a beat whose segment leaves its half is not used
+      min_template_correlation: "min Pearson correlation of the half's beats with the pre template (>= 2 pre beats)"
+      max_normalized_rms_difference: "max RMS(beat - template) / RMS(template); log"
+    amplitude: "existing 9 amplitude features (min, max, range of the normalized half; pre, post, post - pre)"   # [PI] included
+    dwt: {wavelet: db4, level: 5, mode: symmetric, value: "relative energy of D1..D5 and A5 (sum 1)"}
+    psd:
+      welch: {window: hann, nperseg: 720, noverlap: 360, detrend: constant, scaling: density}
+      relative_band_power_hz: [[0, 1], [1, 5], [5, 15], [15, 40], [40, 180]]   # share of total 0-180 Hz power
+      spectral_centroid_hz: "over 0-180 Hz"
+    spectral_entropy: "normalized Shannon entropy of the Welch PSD over 0.5-40 Hz (divided by log of the bin count)"
+    sqi:
+      bsqi: "topovital.stage0_pipeline.bsqi with configs/stage0.yaml qc.bsqi (unchanged Stage 0 definition)"
+      ksqi: "kurtosis, Pearson definition (fisher=False)"
+      ssqi: skewness
+      psqi: "P(5-15 Hz) / P(5-40 Hz) from the Welch PSD"
+      bassqi: "1 - P(0-1 Hz) / P(0-40 Hz) from the Welch PSD"
+  boundary:                          # [PI] whole-window scalars crossing t0; full-window detection
+    reference: "median RR of beats detected before t0 (>= 2 beats)"
+    rr_cross_ratio: "RR spanning t0 (last beat before t0 to first beat at or after t0) / reference; log"
+    min_rr_ratio_post: "min over beats at or after t0 of RR to the previous detected beat / reference; log"
+    compensatory_ratio: "(RR_i + RR_i+1) / (2 * reference) for the beat attaining min_rr_ratio_post; log"
+    first_beat_assumption: none      # [PI] the first beat after t0 is never assumed to be a PVC
+  audit_only:                        # never a model input
+    first_beat_latency_s: "time from t0 to the first detected beat at or after t0 (full-window detection)"
+
+missing_values:                      # [APPROVED G-03]
+  windows: keep_all_4788
+  undefined: nan                     # non-finite values, undefined ratios, detection or delineation failures
+  imputation: training_fold_median   # per (inner or outer) training fold, unweighted, training rows only
+  indicators:                        # model inputs, 0/1
+    - rhythm_pre_missing
+    - rhythm_post_missing
+    - qrs_pre_missing
+    - qrs_post_missing
+    - template_pre_missing
+    - template_post_missing
+    - boundary_missing
+  audit: "per window, half, feature: failure reason (separate file, not a model input)"
+  log_transform: positive_finite_ratios_only   # features marked 'log'; a non-positive ratio is NaN with its reason
+  clipping: none
+  stop_rule: "block training if any clean (C0/C1) pre-half rhythm or template failure rate exceeds 0.05"   # [PI]
+
+models:                              # [APPROVED G-04] standardization and L2 logistic regression as in Level 2
+  classical_only: {classical: all, boundary: true, pi: false}
+  ph_only: {classical: none, boundary: false, pi: true}      # must reproduce factorial pi_only
+  classical_plus_ph: {classical: all, boundary: true, pi: true}
+  classical_only_no_boundary: {classical: all, boundary: false, pi: false}   # [PI] boundary inclusion vs exclusion
+  classical_plus_ph_no_boundary: {classical: all, boundary: false, pi: true}
+  block_scaling: none
+  candidates: "PI models: resolution x sigma x C (20); classical-only models: C (5)"
+
+ph_reproducibility:                  # [APPROVED G-04]
+  reference: outputs/stage1_analysis/development/factorial/   # hash-verified against hashes/factorial_outputs.sha256
+  compare: [oof_score, threshold_primary, threshold_c1, selected_resolution, selected_sigma, selected_C, inner_candidate_scores]
+  tolerance_abs: 1.0e-12
+
+comparisons:                         # [APPROVED G-05] paired subject-cluster bootstrap, identical resamples for all models
+  primary: classical_plus_ph - classical_only
+  secondary:
+    - classical_plus_ph - ph_only
+    - classical_only - ph_only
+    - classical_only - classical_only_no_boundary
+    - classical_plus_ph - classical_plus_ph_no_boundary
+  threshold_rule: primary            # all Level 3 models share the factorial primary rule; the C1 rule is reported separately
+  metrics: [stratified_auroc, c0_fpr, c2_fpr, c1_sensitivity, c3_sensitivity, weighted_balanced_accuracy,
+            auroc_c2_vs_c0, auroc_c3_vs_c1, paired_change_normal, paired_change_pvc]
+  claim_rule: "an improvement is claimed only if the paired 95 % CI excludes 0 and C0/C2 FPR does not rise while C1/C3 sensitivity is maintained"   # [PI]
+  p_values: none
+
+ablation:                            # [APPROVED G-06] exploratory; run only after the main comparison is reviewed
+  enabled: false
+  groups: [rhythm, qrs, template, amplitude, dwt, psd, spectral_entropy, sqi, boundary]

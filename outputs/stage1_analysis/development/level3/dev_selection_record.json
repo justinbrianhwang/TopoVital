@@ -1,0 +1,177 @@
+{
+  "classical_only": {
+    "resolution": null,
+    "sigma_pixels": null,
+    "C": 0.001,
+    "cv_score": 0.9257725438638396,
+    "threshold_primary": 0.4048020081579449,
+    "threshold_c1": 0.4048020081579449,
+    "pi_regions": {
+      "cub_sub_h0": [
+        -3.283555900621118,
+        3.5000000000000004,
+        0.0,
+        14.74206971677557
+      ],
+      "cub_super_h0": [
+        -12.1,
+        2.5526859318996613,
+        0.0,
+        13.889094202898569
+      ],
+      "vr_h0": [
+        null,
+        null,
+        0.0,
+        3.7016495679707115
+      ],
+      "vr_h1": [
+        0.09993110574449174,
+        5.566593354222683,
+        0.0,
+        0.8585639298264993
+      ]
+    },
+    "selection_basis": "separate LOSO over all Development subjects; outer-fold results not used"
+  },
+  "ph_only": {
+    "resolution": 10,
+    "sigma_pixels": 1.0,
+    "C": 0.001,
+    "cv_score": 0.7424684027717074,
+    "threshold_primary": 0.2327430102388483,
+    "threshold_c1": 0.24967429585304962,
+    "pi_regions": {
+      "cub_sub_h0": [
+        -3.283555900621118,
+        3.5000000000000004,
+        0.0,
+        14.74206971677557
+      ],
+      "cub_super_h0": [
+        -12.1,
+        2.5526859318996613,
+        0.0,
+        13.889094202898569
+      ],
+      "vr_h0": [
+        null,
+        null,
+        0.0,
+        3.7016495679707115
+      ],
+      "vr_h1": [
+        0.09993110574449174,
+        5.566593354222683,
+        0.0,
+        0.8585639298264993
+      ]
+    },
+    "selection_basis": "separate LOSO over all Development subjects; outer-fold results not used"
+  },
+  "classical_plus_ph": {
+    "resolution": 10,
+    "sigma_pixels": 1.0,
+    "C": 0.001,
+    "cv_score": 0.9050267800168881,
+    "threshold_primary": 0.3539046631415617,
+    "threshold_c1": 0.36498620264532444,
+    "pi_regions": {
+      "cub_sub_h0": [
+        -3.283555900621118,
+        3.5000000000000004,
+        0.0,
+        14.74206971677557
+      ],
+      "cub_super_h0": [
+        -12.1,
+        2.5526859318996613,
+        0.0,
+        13.889094202898569
+      ],
+      "vr_h0": [
+        null,
+        null,
+        0.0,
+        3.7016495679707115
+      ],
+      "vr_h1": [
+        0.09993110574449174,
+        5.566593354222683,
+        0.0,
+        0.8585639298264993
+      ]
+    },
+    "selection_basis": "separate LOSO over all Development subjects; outer-fold results not used"
+  },
+  "classical_only_no_boundary": {
+    "resolution": null,
+    "sigma_pixels": null,
+    "C": 0.001,
+    "cv_score": 0.9023371614860005,
+    "threshold_primary": 0.375718069250128,
+    "threshold_c1": 0.37751648921507136,
+    "pi_regions": {
+      "cub_sub_h0": [
+        -3.283555900621118,
+        3.5000000000000004,
+        0.0,
+        14.74206971677557
+      ],
+      "cub_super_h0": [
+        -12.1,
+        2.5526859318996613,
+        0.0,
+        13.889094202898569
+      ],
+      "vr_h0": [
+        null,
+        null,
+        0.0,
+        3.7016495679707115
+      ],
+      "vr_h1": [
+        0.09993110574449174,
+        5.566593354222683,
+        0.0,
+        0.8585639298264993
+      ]
+    },
+    "selection_basis": "separate LOSO over all Development subjects; outer-fold results not used"
+  },
+  "classical_plus_ph_no_boundary": {
+    "resolution": 10,
+    "sigma_pixels": 1.0,
+    "C": 0.01,
+    "cv_score": 0.9127594070972783,
+    "threshold_primary": 0.2903912410160225,
+    "threshold_c1": 0.45666645875815354,
+    "pi_regions": {
+      "cub_sub_h0": [
+        -3.283555900621118,
+        3.5000000000000004,
+        0.0,
+        14.74206971677557
+      ],
+      "cub_super_h0": [
+        -12.1,
+        2.5526859318996613,
+        0.0,
+        13.889094202898569
+      ],
+      "vr_h0": [
+        null,
+        null,
+        0.0,
+        3.7016495679707115
+      ],
+      "vr_h1": [
+        0.09993110574449174,
+        5.566593354222683,
+        0.0,
+        0.8585639298264993
+      ]
+    },
+    "selection_basis": "separate LOSO over all Development subjects; outer-fold results not used"
+  }
+}

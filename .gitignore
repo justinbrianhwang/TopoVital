@@ -21,6 +21,8 @@ Thumbs.db
 
 # Research proposal / protocol / brief documents (kept local, not published)
 TopoVital_v1.3_CPU_Agent_Stage0_Prompt.md
+TopoVital_Final_Experiments_Agent_Prompt.md
+*Agent_Prompt*.md
 topovital/TopoVital_Experimental_Protocol_v1.3_Stage0_Freeze.md
 docs/
 
@@ -31,6 +33,8 @@ outputs/stage1_features/**/regime1_jobs/
 # Regime 1 original audit files contain local absolute paths; publish the sanitized copies in public/ instead
 outputs/stage1_features/development/regime1_ledger.csv
 outputs/stage1_features/development/regime1_injection_log.csv
+# Level 3 waveform check: job_path holds local absolute paths; the sanitized copy is in level3_features/public/
+outputs/stage1_analysis/development/level3_features/waveform_regeneration_check.csv
 tools/__pycache__/
 
 # Stage 1 analysis caches and fitted-model arrays (not published in the repository)

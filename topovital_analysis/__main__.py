@@ -13,6 +13,8 @@ from topovital_stage1.features import representative_events
 from .level1 import run_level1
 from .level2 import run_level2
 from .factorial import run_factorial
+from .classical_features import run_level3_features
+from .level3 import run_level3
 
 
 def main(argv=None) -> int:
@@ -25,8 +27,42 @@ def main(argv=None) -> int:
     level2.add_argument("--pilot", action="store_true")
     factorial = sub.add_parser("factorial")
     factorial.add_argument("--pilot", action="store_true")
+    level3_features = sub.add_parser("level3-features")
+    level3_features.add_argument("--workers", type=int, default=1)
+    level3 = sub.add_parser("level3")
+    level3.add_argument("--pilot", action="store_true")
     args = parser.parse_args(argv)
     try:
+        if args.command in ("level3-features", "level3"):
+            root = PROJECT_ROOT
+            cfg_l3 = load_yaml(root / "configs" / "stage1_level3.yaml")
+            cfg_a = load_yaml(root / "configs" / "stage1_analysis.yaml")
+            if args.command == "level3" and not args.pilot and not cfg_l3["approved_for_full_run"]:
+                raise BlockedError("Level 3 full run requires approved_for_full_run")
+            if args.command == "level3-features" and args.workers < 1:
+                raise BlockedError("--workers must be positive")
+            events = load_dev_events(root / "outputs" / "development" / "event_audit_dev.parquet",
+                                     root / "outputs" / "split_assignment.csv")
+            for name in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS", "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS"):
+                os.environ[name] = "1"
+            if args.command == "level3-features":
+                cfg_r1 = load_yaml(root / "configs" / "stage1_regime1.yaml")
+                cfg_s0 = load_yaml(root / "configs" / "stage0.yaml")
+                out = root / "outputs" / "stage1_analysis" / "development" / "level3_features"
+                run_id = new_run_id(config_hash({"level3": cfg_l3, "analysis": cfg_a, "regime1": cfg_r1, "stage0": cfg_s0}))
+                with profiled(root / "outputs", run_id, "stage1 analysis level3 features", n_jobs=args.workers) as record:
+                    summary = run_level3_features(events, cfg_l3, cfg_a, cfg_r1, cfg_s0, root, out, workers=args.workers)
+                    record["note"] = f"windows={summary['windows']}; stop_rule_passed={summary['stop_rule_passed']}"
+                print(f"Level 3 features: {summary['windows']} windows; output={out.relative_to(root).as_posix()}")
+            else:
+                cfg_f = load_yaml(root / "configs" / "stage1_factorial.yaml")
+                out = root / "outputs" / "stage1_analysis" / "development" / ("level3_pilot" if args.pilot else "level3")
+                run_id = new_run_id(config_hash({"level3": cfg_l3, "factorial": cfg_f, "analysis": cfg_a}))
+                with profiled(root / "outputs", run_id, "stage1 analysis level3", n_jobs=1) as record:
+                    summary = run_level3(events, cfg_l3, cfg_f, cfg_a, root, out, pilot=args.pilot)
+                    record["note"] = f"fits={summary['fits']}; outer_folds={summary['outer_folds']}"
+                print(f"Level 3: {summary['fits']} fits; output={out.relative_to(root).as_posix()}")
+            return 0
         if args.command == "factorial":
             root = PROJECT_ROOT
             cfg_f = load_yaml(root / "configs" / "stage1_factorial.yaml")

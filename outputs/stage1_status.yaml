@@ -96,7 +96,28 @@ stage1:
 
   regime2: not_started
   regime3: not_started
-  level3: design_in_preparation     # classical baseline comparison; no training before design approval
+  level3:
+    status: complete_with_reproducibility_exception   # approvals G-01..G-06, configs/stage1_level3.yaml; finalized 2026-11-02
+    outer_folds: "10 / 10 succeeded"
+    fits: 7055                      # 6,350 outer + 705 final Development selection; 0 failures; 0 convergence warnings
+    wall_time_s: 17138.0
+    peak_rss_mb: 999.5
+    blas_threads: 1                 # all five models, one process; thread variables exported in the launch shell
+    analysis_code_hash: 2f6a358682ca000d504cc44545654c21d7ebc4a73826407d72730875fe1ccd33   # identical before and after the run
+    config_sha256:
+      stage1_level3: eed25fae02186089b930ff53ce281ea095e32e98ff461f5acc396038c25ab064
+      stage1_factorial: 2e3b300070616eabff0d2eae1230645256110e98ef97cd531853d276630b3462
+      stage1_analysis: f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b
+    reproducibility_exception: "ph_only does not reproduce factorial pi_only exactly (max OOF diff 0.076; selected parameters equal); cause: factorial ran with 12 OpenBLAS threads, Level 3 with 1; accepted by the PI; see level3_audit/reproducibility_exception.md"
+    hashes: outputs/stage1_analysis/development/hashes/{level3_pilot_prerun.json, level3_pilot_postrun.json, level3_full_run_prerun.json, level3_full_run_postrun.json, level3_outputs.sha256}
+    outputs: outputs/stage1_analysis/development/level3/   # final_models/ not for the repository
+    features: outputs/stage1_analysis/development/level3_features/
+    pilot: outputs/stage1_analysis/development/level3_pilot/   # outer fold S105, 12 BLAS threads
+    audit: outputs/stage1_analysis/development/level3_audit/
+    result_primary_rule: "subject-equal stratified AUROC: classical_only 0.925, classical_plus_ph 0.899, classical_only_no_boundary 0.886, classical_plus_ph_no_boundary 0.904, ph_only 0.521"
+    conclusion: "adding PH did not improve PVC detection over classical features (difference -0.026, 95% CI -0.091 to 0.021); boundary features raise classical-only AUROC by 0.039 (CI -0.003 to 0.085), interpreted as possible alignment shortcut, not removed by the no-boundary models"
+    ablation_g06: not_started       # after review of the main comparison
+    bug_pending: "thread variables set after numpy import in topovital_analysis/__main__.py; fix in a separate code version"
   decision_threshold: not_started
 
 test_split:

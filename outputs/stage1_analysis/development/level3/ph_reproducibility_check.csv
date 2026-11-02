@@ -1,0 +1,9 @@
+item,n_compared,max_abs_diff,all_equal
+oof_score,4788,0.07616199855411732,False
+threshold_primary,4788,0.0032476192007731552,False
+threshold_c1,4788,0.0015929055159212557,False
+selected_resolution,4788,0.0,True
+selected_sigma,4788,0.0,True
+selected_C,4788,0.0,True
+inner_candidate_scores,200,0.026207111013308526,False
+dev_selection_record,22,7.882583474838611e-15,True

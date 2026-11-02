@@ -1,0 +1,24 @@
+{
+  "recorded_utc": "2026-11-02T00:37:49Z",
+  "purpose": "pre-run record for Level 3 classical feature extraction and S105 pilot (Development); rewritten after the bSQI config-key fix (the first extraction attempt stopped in the worker stage and wrote no outputs)",
+  "analysis_code_hash": "2f6a358682ca000d504cc44545654c21d7ebc4a73826407d72730875fe1ccd33",
+  "files": {
+    "configs/stage0.yaml": "449d4096bb108ce834cc2fa334c38f1b94044fbf86dfc290e88e82f7e49fc4b7",
+    "configs/stage1_analysis.yaml": "f3c61b65dc15a8bf2399c7d00525b2927b310ff8bb345c8550c8b8ebc948681b",
+    "configs/stage1_factorial.yaml": "2e3b300070616eabff0d2eae1230645256110e98ef97cd531853d276630b3462",
+    "configs/stage1_level3.yaml": "4d677463839a0b20724f41b61f3113cf8d73e532dcb053c938465911ba19b868",
+    "configs/stage1_regime1.yaml": "e682a818822dd46a10d142936f2de4fa9e37e804c29ff3e99293a656d47e6140",
+    "topovital_analysis/__init__.py": "3d41dde13a7e5b2d5ce62472406d59d2aa197caaaeabec36f62bb072d751ca65",
+    "topovital_analysis/__main__.py": "8af1a226f0a2f28d2d633d04588b19e35478a1ebd76c9c899ef03ba9a6215a1b",
+    "topovital_analysis/classical_features.py": "0ef195d03a3586a65328f24552f20ee390a9b694c0502be3dafc5fbc04b68d7d",
+    "topovital_analysis/distances.py": "3387829c8639d6b87753526724441bd9a4c3a9e4d4d42dc2ab78e0dbb2648625",
+    "topovital_analysis/factorial.py": "c63a5cee5d626ba595d6bcdeb544231110a7419c79ecb3a475fc9a15fc311d61",
+    "topovital_analysis/factorial_metrics.py": "962a8162ae1838483d5e4ff2ca5349a194696efe9a6053508e3881a518e6e98d",
+    "topovital_analysis/level1.py": "dee81e81ff8d76702a0c06b48378233c50f79c5c176582a56cae007fb5a5823b",
+    "topovital_analysis/level2.py": "be9808fd2af994391b20ca9845ff23420895b9bfcf1e7063c390a41df97b6d28",
+    "topovital_analysis/level2_metrics.py": "c2bf4f2c6597423a703650ac41dab55d3e5aa30f10ad7300119f8128a2a2c642",
+    "topovital_analysis/level3.py": "942dd332acab332a4ce15c24943b56fba286a7e1365f9df68337508601d47e2b",
+    "topovital_analysis/persistence_images.py": "4b43b7a1f3df1a25f4cb77ac20643107fee9d8ac6570a6d8f91c9fc7ce50ed90",
+    "topovital_analysis/stats.py": "423a7d187746519da284c0eab13d6aeda30de5f6276544ec40808d32086117e4"
+  }
+}

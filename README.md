@@ -8,14 +8,15 @@ documents **Stage 0** of the experimental protocol: cohort construction, event e
 guard-interval (`g_star`) selection on Development data only, and a locked Development/Test gate. It also contains
 the **Stage 1** topological feature extraction, which is in progress on Development data.
 
-> **Status (2026-11-01):**
+> **Status (2026-11-02):**
 > - **Stage 0** is complete and **frozen** with `g_star = 250 ms`. The Test split was processed exactly once with the frozen configuration.
 > - **Stage 1 (Development only):**
 >   - Clean-window persistent homology (C0/C1) is complete: 504 / 504 jobs succeeded.
 >   - Regime 1 artefact injection (C2/C3, NSTDB `bw` / `ma` / `em`) is complete: 4,536 / 4,536 jobs succeeded.
 > - **Level 1** (pre/post PH distances) and **Level 2** (persistence images with nested subject-level CV) analyses on Development are complete. The Level 2 C1-vs-C2 result has a known confound (see its limitation note).
 > - The **factorial C0–C3** analysis on Development is complete. It reduced the score dependence on artefact, but improved PVC detection was not shown.
-> - Test remains locked for Stage 1. Regime 2/3, Level 3 and Test evaluation have not started.
+> - The **Level 3** classical baseline comparison on Development is complete. Persistent homology did not add PVC-detection value over classical features, and the PH-only model has a documented thread-environment reproducibility exception.
+> - Test remains locked for Stage 1. Regime 2/3 and Test evaluation have not started.
 > - The authoritative progress record is [`outputs/stage1_status.yaml`](outputs/stage1_status.yaml).
 
 <p align="center">
@@ -31,7 +32,7 @@ the **Stage 1** topological feature extraction, which is in progress on Developm
 - **No Test leakage.** The guard interval is chosen on Development only. Test aggregation is refused unless a frozen `locked_config.yaml` exists, and the stage-0 config hash and code hash still match. A Test-side `g` sweep is always refused.
 - **Branching cohorts.** Template failure never removes an event from the Common cohort (Regimes 1/3); it only excludes the event from the Regime 2 subset.
 - **Auditable.** Per-event audit with every gate flag, quality metric and first drop reason. Resource profile (wall time, peak RSS) for every command. SHA256 for all inputs.
-- **CPU-only.** No GPU/CUDA/PyTorch/TensorFlow dependency. BLAS/OpenMP threads pinned to 1, record-by-record processing.
+- **CPU-only.** No GPU/CUDA/PyTorch/TensorFlow dependency. Record-by-record processing. The Stage 0 pipeline pins BLAS/OpenMP threads to 1. Stage 1 analysis runs before the Level 3 full run used the machine's default BLAS thread count; see the Level 3 reproducibility exception and `outputs/resource_profile_corrections.csv`.
 
 ## Stage 0 results (MIT-BIH Arrhythmia Database, MLII, `g = 250 ms`)
 
@@ -313,6 +314,118 @@ Outputs are in [`outputs/stage1_analysis/development/factorial/`](outputs/stage1
 
 The one-fold pilot (outer S105) is in `factorial_pilot/`. `final_models/` is not stored in the repository.
 
+## Stage 1 analysis, Level 3: classical baseline comparison (Development)
+
+This analysis asks whether persistent homology adds information to classical ECG features. Settings are in
+[`configs/stage1_level3.yaml`](configs/stage1_level3.yaml) (approvals G-01 to G-06). The training task, weights (F-01),
+selection metric (F-02), threshold rules (F-03), nested LOSO, classifier, C grid, tie break and bootstrap are inherited
+unchanged from the factorial analysis; only the input features differ.
+
+**Classical features (computed for all 4,788 windows).**
+- **Waveforms:** regenerated from the raw records and the Regime 1 injection metadata, then checked against every
+  `.npz` input hash (5,040 / 5,040 matched).
+- **Annotations:** no MIT-BIH annotation is read for any feature. R peaks come from `xqrs` on the 0.5–40 Hz filtered
+  half. Labels and events come only from the frozen Stage 0 audit tables.
+- **Feature groups:** each value is computed for the pre half, the post half and their difference.
+  - rhythm: beat count, median RR, RR coefficient of variation
+  - QRS: NeuroKit2 DWT widths and R amplitude
+  - template: correlation and normalized RMS difference against the pre-half template
+  - amplitude: the 9 Level 2 features
+  - DWT: db4, level 5, relative energies
+  - PSD: Welch relative band powers and spectral centroid
+  - spectral entropy
+  - SQI: bSQI, kSQI, sSQI, pSQI, basSQI
+- **Boundary features:** scalars computed on the whole window. They are RR across t0, the minimum post-t0 RR ratio
+  (no beat is assumed to be the PVC) and the compensatory ratio.
+- **Missing values:** detection and delineation failures are kept as NaN and imputed with the training-fold median.
+  Seven 0/1 missing indicators are model inputs.
+- **Models (5):**
+  - `classical_only`
+  - `classical_only_no_boundary`
+  - `classical_plus_ph`: classical features + the factorial persistence images
+  - `classical_plus_ph_no_boundary`
+  - `ph_only`: the factorial `pi_only`
+- **Fitting:** all five models are fitted in the same nested LOSO with the same weights and resamples, with no
+  block scaling.
+
+**Run:**
+- 10 / 10 outer folds, 7,055 fits, 0 failures and 0 convergence warnings.
+- The run took 17,138 s with a peak of 1,000 MB, using 1 BLAS thread for all models.
+- Code hash `2f6a3586…` and configuration hashes were identical before and after the run.
+- Stage 0/1 frozen files, Level 1, Level 2 and factorial outputs and the NPZ inputs were verified unchanged.
+
+**Results (primary threshold, outer folds, subject-equal, 95 % bootstrap CI):**
+
+| Model | **Stratified AUROC** | C1 sensitivity | C3 sensitivity | C0 FPR | C2 FPR | AUROC(C2 vs C0) |
+|---|---|---|---|---|---|---|
+| `classical_only` | **0.925** [0.888, 0.956] | 0.927 [0.827, 0.992] | 0.901 [0.804, 0.970] | 0.218 [0.079, 0.375] | 0.372 [0.266, 0.498] | 0.630 [0.582, 0.675] |
+| `classical_only_no_boundary` | 0.886 [0.830, 0.934] | 0.902 [0.783, 0.988] | 0.887 [0.802, 0.955] | 0.239 [0.081, 0.415] | 0.417 [0.308, 0.546] | 0.623 [0.569, 0.679] |
+| `classical_plus_ph` | **0.899** [0.799, 0.968] | 0.898 [0.756, 0.985] | 0.887 [0.756, 0.971] | 0.349 [0.158, 0.587] | 0.364 [0.188, 0.591] | 0.551 [0.482, 0.624] |
+| `classical_plus_ph_no_boundary` | 0.904 [0.846, 0.956] | 0.911 [0.772, 0.993] | 0.880 [0.719, 0.979] | 0.405 [0.165, 0.679] | 0.474 [0.274, 0.693] | 0.579 [0.516, 0.643] |
+| `ph_only` | 0.521 [0.363, 0.666] | 0.689 [0.433, 0.916] | 0.773 [0.611, 0.925] | 0.639 [0.403, 0.867] | 0.660 [0.451, 0.853] | 0.471 [0.427, 0.516] |
+
+**Paired comparisons (same subjects, events and resamples; difference [95 % CI]):**
+
+| Comparison | Stratified AUROC | C0 FPR | C2 FPR | C1 sensitivity | C3 sensitivity |
+|---|---|---|---|---|---|
+| **Primary: `classical_plus_ph` − `classical_only`** | **−0.026 [−0.091, 0.021]** | +0.132 [−0.132, 0.431] | −0.008 [−0.186, 0.206] | −0.029 [−0.213, 0.133] | −0.013 [−0.194, 0.142] |
+| No boundary: `classical_plus_ph_no_boundary` − `classical_only_no_boundary` | +0.018 [−0.0005, 0.040] | +0.166 [−0.106, 0.482] | +0.057 [−0.134, 0.275] | +0.009 [−0.107, 0.134] | −0.007 [−0.154, 0.102] |
+| Boundary effect: `classical_only` − `classical_only_no_boundary` | +0.039 [−0.003, 0.085] | −0.022 [−0.086, 0.040] | −0.045 [−0.102, 0.010] | +0.025 [−0.016, 0.100] | +0.013 [−0.023, 0.059] |
+| Boundary effect: `classical_plus_ph` − `classical_plus_ph_no_boundary` | −0.005 [−0.096, 0.061] | −0.056 [−0.147, 0.010] | −0.110 [−0.234, −0.009] | −0.013 [−0.196, 0.150] | +0.007 [−0.173, 0.179] |
+
+- **Artefact dependence:** adding PH lowers AUROC(C2 vs C0) by 0.080 [0.009, 0.151]. However, the paired PVC score
+  change f(C3) − f(C1) also falls (−0.043 [−0.061, −0.021]), so this is not a robustness gain.
+- **Per subject:** stratified AUROC ranges 0.81–1.00 for `classical_only` (SD 0.06) and 0.53–1.00 for
+  `classical_plus_ph` (SD 0.15).
+- **Boundary-excluded pair:** this comparison is outside the configured list. It was computed afterwards with the
+  same function and bootstrap seed (`level3_audit/model_comparison_no_boundary_pair.csv`).
+
+> **Conclusion: persistent homology did not add PVC-detection value over classical features.**
+> - **No improvement from PH.** The primary difference is −0.026 [−0.091, 0.021]: the CI includes 0 and C0 FPR tends to rise.
+> - **Same result without boundary features.** The difference is +0.018, its CI includes 0, and C0/C2 FPR rise.
+> - **Boundary features raise classical-only performance** (+0.039 subject-equal, +0.098 window-level). This gain is read as a possible alignment shortcut, not as morphology information.
+>
+> These are descriptive Development results.
+
+**Limitations.**
+- **Alignment cue.**
+  - In C1/C3 the first detected beat after t0 lies at 0.25 s (IQR 0.250–0.256 s), because events are aligned to
+    t0 + 250 ms. In C0 it is spread out (0.006–0.79 s).
+  - `boundary_missing` also differs by condition (C0 0.22, C1 0.03).
+  - The no-boundary models remove only the boundary scalars. Half-defined rhythm features can still carry alignment
+    information, so these models mitigate the shortcut but do not remove every alignment cue.
+- **QRS missing indicators.** QRS post-half delineation fails less often under heavy noise. The paired rate change
+  C2 − C0 is −0.151, and the rate is 0 % at −6 dB. A successful detection therefore does not mean an accurate QRS
+  boundary, and the missing indicator can act as a noise marker.
+- **Ten subjects.** Five subjects have only 1–6 events but carry equal weight. Their per-subject FPR and sensitivity
+  are coarse (often 0 or 1), and the CIs are wide.
+- **C at the grid edge.** The lowest C (0.001) was chosen in 9 / 10 outer folds for `classical_only`, 7 / 10 for
+  `classical_only_no_boundary`, 5 / 10 for `classical_plus_ph` and 0 / 10 for `classical_plus_ph_no_boundary`.
+  `ph_only` chose the lowest C in 3 folds and the highest in 1. The grid was not changed.
+- **Thread environment (reproducibility exception).**
+  - `ph_only` does not reproduce the factorial `pi_only` exactly. The maximum OOF difference is 0.076, and the
+    selected parameters are equal in every fold.
+  - The cause is that the factorial ran with 12 OpenBLAS threads and Level 3 with 1. This changes the lbfgs path in
+    weakly regularized PI fits.
+  - The effect on overall subject-equal metrics is at most 0.006 (stratified AUROC 0.5215 vs 0.5242). Single cells
+    differ by up to 0.10.
+  - Details are in [`level3_audit/reproducibility_exception.md`](outputs/stage1_analysis/development/level3_audit/reproducibility_exception.md).
+
+**Outputs.**
+- **Main run:** [`outputs/stage1_analysis/development/level3/`](outputs/stage1_analysis/development/level3/)
+  contains OOF predictions, window-level, subject-level and per-subject metrics, bootstrap CIs, paired model
+  comparisons, weight and imputation logs, and the inner and final selection records.
+- **Features:** `level3_features/` holds the classical features and the failure audit. The waveform regeneration
+  check is published as a path-sanitized copy in `level3_features/public/`; the original holds local absolute paths
+  and is kept only locally.
+- **Pilot:** `level3_pilot/` holds the outer-fold S105 pilot.
+- **Audit:** `level3_audit/` holds the reproducibility exception, the PH-only fold, candidate and aggregate
+  differences, and the BLAS-thread evidence.
+- **Hashes:** output hashes are in `hashes/level3_outputs.sha256`.
+- **Thread-record corrections:** `outputs/resource_profile_corrections.csv` corrects the thread records of earlier
+  runs, marking confirmed and inferred values separately.
+- **Not stored:** `final_models/` is not stored in the repository.
+
 ## Installation
 
 Developed and tested on Python 3.14 (Windows 11). Other Python versions have not been verified.
@@ -369,6 +482,8 @@ python -m topovital_stage1 regime1 --workers 4           # C2/C3 Regime 1 inject
 python -m topovital_analysis level1 --workers 4 [--events N]   # Level 1 pre/post PH distances
 python -m topovital_analysis level2 [--pilot]                  # Level 2 persistence images, nested LOSO (needs approval)
 python -m topovital_analysis factorial [--pilot]               # factorial C0-C3 training, nested LOSO (needs approval)
+python -m topovital_analysis level3-features --workers 4       # Level 3 classical features (waveforms regenerated and hash-checked)
+python -m topovital_analysis level3 [--pilot]                  # Level 3 classical baseline comparison, nested LOSO (needs approval)
 ```
 
 `--events N` runs a deterministic subset with one event per subject. Every VR job runs in a monitored child process with a 6 GB abort limit. Each job is cached by the SHA-256 of its normalized input, parameters, GUDHI version and Stage 1 code hash, so an interrupted run resumes without recomputation.
@@ -398,10 +513,12 @@ python -m topovital_analysis factorial [--pilot]               # factorial C0-C3
 assets/figs/  README figures
 configs/            stage0.yaml (all Stage 0 settings), g-decision records,
                     stage1.yaml (PH settings), stage1_regime1.yaml (artefact injection)
-                    stage1_analysis.yaml (Level 1/2), stage1_factorial.yaml (factorial C0-C3)
+                    stage1_analysis.yaml (Level 1/2), stage1_factorial.yaml (factorial C0-C3),
+                    stage1_level3.yaml (Level 3 classical baseline)
 topovital/          Stage 0 pipeline package (frozen)
 topovital_stage1/   Stage 1 package: embedding, persistent homology, Regime 1 injection
-topovital_analysis/ Stage 1 analysis: Level 1 PH distances, Level 2 persistence images, factorial C0-C3, nested LOSO
+topovital_analysis/ Stage 1 analysis: Level 1 PH distances, Level 2 persistence images, factorial C0-C3,
+                    Level 3 classical features and baseline comparison, nested LOSO
 tools/              publication helpers: path-sanitized audit copies, cache config-hash comparison
 tests/              unit + real-data reproducibility tests (pytest); tests/stage1/ for Stage 1
 outputs/            Stage 0 deliverables: cohort_manifest.csv, event_audit*.parquet, attrition_summary.csv,
@@ -409,7 +526,7 @@ outputs/            Stage 0 deliverables: cohort_manifest.csv, event_audit*.parq
 outputs/stage1_pilot/      embedding diagnostics and PH resource pilot (Development)
 outputs/stage1_features/   Stage 1 job ledgers and run summaries (per-job .npz diagrams archived on Zenodo)
 outputs/stage1_status.yaml Stage 1 progress record
-outputs/stage1_analysis/   Level 1 / Level 2 / factorial analysis outputs (Development)
+outputs/stage1_analysis/   Level 1 / Level 2 / factorial / Level 3 analysis outputs (Development)
 ```
 
 ## License and data attribution

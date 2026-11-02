@@ -195,3 +195,19 @@ unchanged. Final Development selection: `pi_only` R = 10, σ = 1 px, C = 0.001; 
 artefact dependence decreased (AUROC(C2 vs C0) 0.22 → 0.53) but C2 FPR rose (0.38 → 0.71), C0 FPR did not fall and
 stratified AUROC fell (0.78 → 0.70). Conclusion: score dependence on artefact decreased; improved PVC detection was
 not shown. `final_models/` is not published.
+
+**Level 3 full nested LOSO** (2026-11-02, approvals G-01..G-06, `configs/stage1_level3.yaml`): 10 / 10 outer folds,
+7,055 fits (6,350 outer + 705 final Development selection), 0 failures, 0 convergence warnings, 17,138 s, peak
+1,000 MB, 1 OpenBLAS thread for all five models. Analysis code hash `2f6a3586…` was identical before and after the run
+(`hashes/level3_full_run_prerun.json`, `hashes/level3_full_run_postrun.json`); output hashes are in
+`hashes/level3_outputs.sha256`. Independent checks: weights pass in all 111 training folds; outer imputation medians
+recomputed from training subjects (max difference 1.8e-15); selections re-derived; per-subject metrics match sklearn
+(max difference 3.3e-16); 0 undefined bootstrap resamples.
+
+**Reproducibility exception (Level 3):** `ph_only` did not reproduce factorial `pi_only` exactly (max OOF
+difference 0.076; selected R, sigma and C equal in all folds; final Development record equal to 7.9e-15). Cause: the
+factorial ran with 12 OpenBLAS threads and Level 3 with 1, because `topovital_analysis/__main__.py` sets the thread
+variables after numpy is imported; verified by an S210 refit under both settings. The principal investigator accepted
+the single-thread results; details in `level3_audit/reproducibility_exception.md`, corrected thread records in
+`outputs/resource_profile_corrections.csv` (original `resource_profile.csv` unchanged). The bug will be fixed in a
+separate code version.

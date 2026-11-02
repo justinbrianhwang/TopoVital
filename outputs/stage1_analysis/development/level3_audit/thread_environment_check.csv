@@ -1,0 +1,6 @@
+check,result,evidence
+"one process, one run",True,"run_id 20261102T024744Z_59b9f919; 7055 fits; models ['classical_only', 'classical_only_no_boundary', 'classical_plus_ph', 'classical_plus_ph_no_boundary', 'ph_only'] in one oof_predictions.parquet"
+thread variables exported in the launch shell,True,launch: export OMP/OPENBLAS/MKL/NUMEXPR/VECLIB_MAXIMUM_THREADS=1 before .venv python -m topovital_analysis level3
+exported variables give 1 BLAS thread in this venv,True,"threadpoolctl under the same exports: openblas 1;1, openmp 1 (s210_blas_thread_check.csv)"
+"1-thread refit reproduces Level 3 OOF exactly (S210 ph_only, C 10)",True,max |diff| 0.0 in 2 repeats (s210_blas_thread_check.csv)
+PI-free models are thread-insensitive (S105 pilot 12-thread vs full 1-thread),True,classical_only 0; classical_only_no_boundary 0; classical_plus_ph 2.61e-12; classical_plus_ph_no_boundary 4.28e-11; ph_only 0.018
