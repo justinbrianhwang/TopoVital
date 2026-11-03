@@ -19,6 +19,21 @@
       "source_path": "outputs/final_test/dev_verification_frozen/replay/jobs_ledger.csv",
       "public_sha256": "da22d6c8f7a59df383c901c1a03caebe6c0e096f29c7d4e327bf18946b5ff657",
       "source_sha256": "da22d6c8f7a59df383c901c1a03caebe6c0e096f29c7d4e327bf18946b5ff657"
+    },
+    "outputs/final_test/public/test_run/run_summary.json": {
+      "source_path": "outputs/final_test/run_summary.json",
+      "source_sha256": "91f51bb95368e5db83ba3dc9f053e44e31ae26d865687e496930ba255b0f17ea",
+      "public_sha256": "4ca3a4dbcf353f337bc5ad41cf4b7085051aa5c58e68d111708bbf87310b0fcf"
+    },
+    "outputs/final_test/public/test_run/hashes/preflight.json": {
+      "source_path": "outputs/final_test/hashes/preflight.json",
+      "source_sha256": "f29ec302bd77f293118a5d15a0f09a50e06ff955a06862a9d42bc3c80f3ff57c",
+      "public_sha256": "5cecc1f04ba2e100b77db9027d6ff70b763dc7179a6db6f75a5193199559dc27"
+    },
+    "outputs/final_test/public/test_run/hashes/postrun.json": {
+      "source_path": "outputs/final_test/hashes/postrun.json",
+      "source_sha256": "1cca2ff9dfeadc628297c0791a02f4be30c519ebc5ddd3764e8004d66d56fe96",
+      "public_sha256": "516409f247ef9bc8ba3f5bdec22b74b906cc2c7bb8812e0188deacced6b4e7aa"
     }
   }
 }

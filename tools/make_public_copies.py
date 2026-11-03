@@ -240,17 +240,92 @@ def make_final_test_public_copy(root: Path = ROOT) -> dict:
     return manifest
 
 
+TEST_RUN_NAMES = ("run_summary.json", "hashes/preflight.json", "hashes/postrun.json")
+_ABSOLUTE_PATH = re.compile(r"(?:[A-Za-z]:[\\/]|\\\\|//|/(?:Users|home)/)[^\s\"'<>;,}]+")
+
+
+def sanitize_test_value(value, root: Path, *, user: str, host: str):
+    """Sanitize JSON keys and values, including paths embedded in strings."""
+    if isinstance(value, dict):
+        result = {}
+        for key, item in value.items():
+            clean_key = sanitize_test_value(key, root, user=user, host=host)
+            if clean_key in result:
+                raise ValueError(f"Public dict keys collide after path rewrite: {clean_key!r}")
+            result[clean_key] = sanitize_test_value(item, root, user=user, host=host)
+        return result
+    if isinstance(value, list):
+        return [sanitize_test_value(item, root, user=user, host=host) for item in value]
+    if not isinstance(value, str):
+        return value
+    if value.casefold() == user.casefold() and user:
+        return "<user>"
+    if value.casefold() == host.casefold() and host:
+        return "<host>"
+    root_parts = str(root.resolve()).replace("\\", "/").rstrip("/")
+
+    def rewrite(match):
+        path = match.group(0).replace("\\", "/")
+        if path.casefold().startswith((root_parts + "/").casefold()):
+            return path[len(root_parts) + 1:]
+        parts = [part for part in path.split("/") if part]
+        return "<external>/" + "/".join(parts[-2:])
+
+    return _ABSOLUTE_PATH.sub(rewrite, value)
+
+
+def make_test_run_public_copy(root: Path = ROOT, *, user: str | None = None,
+                              host: str | None = None, home: Path | None = None) -> dict:
+    root = Path(root)
+    user = getpass.getuser() if user is None else user
+    host = socket.gethostname() if host is None else host
+    home = Path.home() if home is None else Path(home)
+    base = root / "outputs/final_test"
+    public_dir = base / "public"
+    manifest_path = public_dir / "PUBLIC_MANIFEST.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8")) if manifest_path.exists() else {"files": {}}
+    entries = dict(manifest.get("files", {}))
+    source_hashes = {}
+    for name in TEST_RUN_NAMES:
+        source = base / name
+        target = public_dir / "test_run" / name
+        source_hashes[source] = sha256_file(source)
+        data = json.loads(source.read_text(encoding="utf-8"))
+        atomic_write_json(target, sanitize_test_value(data, root, user=user, host=host))
+        public_text = target.read_text(encoding="utf-8")
+        normalized = public_text.replace("\\", "/").casefold()
+        forbidden = [str(root.resolve()), str(home.resolve()), user, host]
+        identity_free = normalized.replace("<user>", "").replace("<host>", "")
+        if any(item and item.replace("\\", "/").casefold() in identity_free for item in forbidden) or re.search(
+            r"[A-Za-z]:[\\/]", public_text
+        ):
+            raise RuntimeError(f"Residual private path or identity in public file: {target}")
+        entries[target.relative_to(root).as_posix()] = {
+            "source_path": source.relative_to(root).as_posix(),
+            "source_sha256": source_hashes[source],
+            "public_sha256": sha256_file(target),
+        }
+    for source, digest in source_hashes.items():
+        if sha256_file(source) != digest:
+            raise RuntimeError(f"Source changed during publication: {source}")
+    manifest["files"] = entries
+    atomic_write_json(manifest_path, manifest)
+    return manifest
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--level3", action="store_true", help="Publish the Level 3 waveform check only")
     parser.add_argument("--final-test", action="store_true", help="Publish final Test Development verification")
+    parser.add_argument("--final-test-run", action="store_true", help="Publish sanitized final Test run reports")
     args = parser.parse_args(argv)
-    if args.level3 and args.final_test:
+    if sum((args.level3, args.final_test, args.final_test_run)) > 1:
         parser.error("Choose only one publication mode")
     try:
-        result = (make_final_test_public_copy() if args.final_test else
+        result = (make_test_run_public_copy() if args.final_test_run else
+                  make_final_test_public_copy() if args.final_test else
                   make_level3_public_copy() if args.level3 else make_public_copies())
-        noun = "files" if args.final_test else "CSVs"
+        noun = "files" if args.final_test or args.final_test_run else "CSVs"
         print(f"Wrote {len(result['files'])} public {noun} and PUBLIC_MANIFEST.json")
     except (OSError, ValueError, RuntimeError) as exc:
         print(f"Public copy failed: {exc}", file=sys.stderr)

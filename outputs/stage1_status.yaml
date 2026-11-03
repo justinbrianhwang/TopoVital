@@ -129,10 +129,12 @@ test_split:
   stage0: processed_once_with_frozen_config   # 2026-10-31, run_id 20261031T203554Z_a8af0552 (deviation F-02)
   stage1: locked                              # no Stage 1 computation has read Test records or the NSTDB Test block
   final_test:
-    status: frozen_pending_test_approval        # U-01, U-02 and the PH-failure rule approved 2026-11-02; Test execution not approved
+    status: executed_once                       # approved 2026-11-02; run 20261102T212150Z_2a9a664f, exit 0, 20,426 s; results published with path-sanitized copies of run_summary and hash records
     settings: configs/final_test_evaluation.yaml
     freeze_manifest: outputs/final_test/final_test_freeze_manifest.json   # sha256 c7530226f005278a099771ab88e3af5a124202a53d803c5928bfb80fa34e6d69
     membership: outputs/final_test/test_event_manifest.csv                # 81 events, 11 subjects; Stage 0 audit columns only
     noise_allocation: outputs/final_test/test_noise_allocation.csv        # 243 snippets in [326800, 649000); positions only
     dev_verification: "outputs/final_test/public/dev_verification_frozen/: all checks passed, 0 pending"
-    test_ph_or_scores_computed: false
+    test_ph_or_scores_computed: true
+    run: {ph_jobs: 3240, ph_failed: 2, windows: 3078, common_evaluable_windows: 3040, excluded_windows: 38, peak_rss_mb: 596.7, max_ph_child_rss_mb: 490.2}
+    primary_result: "subject-equal stratified AUROC classical_plus_ph 0.834 vs classical_only 0.957; difference -0.122 (95% CI -0.302 to -0.017); window-level -0.037 (-0.085 to -0.004)"

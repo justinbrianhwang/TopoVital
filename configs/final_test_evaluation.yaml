@@ -6,8 +6,8 @@
 # computed. The Stage 0 Test cohort and eligibility counts exist from the frozen Stage 0 run (2026-10-31), so the
 # Test cohort is not claimed to be wholly unseen.
 
-status: frozen_pending_test_approval            # decisions U-01, U-02 and the PH-failure rule approved 2026-11-02; Test not approved
-approved_for_test_execution: false             # set true only by the researcher after reviewing the freeze manifest
+status: approved_for_test_execution             # researcher approved one Test run 2026-11-02 after reviewing manifest c7530226...
+approved_for_test_execution: true              # set by the researcher's approval 2026-11-02
 output: outputs/final_test/
 
 settings:

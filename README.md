@@ -475,7 +475,7 @@ holds:
 - paired comparisons (overall, 9-cell, per noise type and per SNR);
 - metrics, bootstrap CIs and missingness by group.
 
-## Final Test evaluation: freeze (Test not yet run)
+## Final Test evaluation: freeze
 
 **Frozen before Test.** Everything below was fixed from Development results only.
 - Settings: [`configs/final_test_evaluation.yaml`](configs/final_test_evaluation.yaml).
@@ -511,6 +511,85 @@ holds:
 
 The Test run is gated. `python -m topovital_final run-test` refuses to start unless the researcher sets
 `approved_for_test_execution: true` and the freeze manifest validates.
+
+## Final Test evaluation: results (independent Test, run once)
+
+**Execution.**
+- **Run:** `run-test --workers 4`, executed once on 2026-11-02 after researcher approval, with run ID
+  `20261102T212150Z_2a9a664f` and exit code 0.
+- **Integrity:** the freeze manifest (`c7530226…`) validated before and after the run.
+- **Resources:** 20,426 s wall time; peak RSS 597 MB in the main process and 490 MB per PH job; analysis code 2.0.0
+  with 1 BLAS thread.
+- **Fitting:** none on Test. There was no refit, recalibration or threshold change.
+- **Size:** 81 events from 11 subjects, giving 3,078 windows: C0 and C1 clean, plus C2 and C3 across 3 noise types
+  × 6 SNRs.
+- **PH jobs:** 3,240 in total; 3,238 passed validation and 2 failed.
+- **SNR:** all 6,156 SNR checks passed (maximum error 1.1e-14 dB).
+- **Feature imputation:** missing classical feature values (mostly QRS-width delineation failures) were imputed with
+  the saved Development medians, as in training.
+
+**PH failures and the common evaluable set.**
+- Two clean C1 pre-half PH jobs failed the frozen `vr_h0_finite_count` validation: event `114_271145` (S114) and
+  `201_212989` (S201). Their diagrams have 298 and 297 finite H0 bars instead of the 299 expected for 300 points.
+- **Cause:** not established. Coincident points in the delay embedding are a possible explanation, but they were not
+  verified.
+- Each failed pre half is reused by that event's 18 C3 windows, so 19 windows per event were not evaluable.
+- Under the frozen Not Evaluable policy, primary metrics and paired comparisons use the common evaluable set: 3,040
+  of 3,078 windows, all 11 subjects. Every exclusion is listed in
+  [`paper/tables/table6_test_failures.md`](paper/tables/table6_test_failures.md).
+- **Robustness check:** per-model metrics on all available windows are nearly identical (Classical 0.958 vs 0.957).
+
+**Results.** Subject-equal stratified AUROC under the primary rule, with 95 % subject-cluster bootstrap CIs (1,000
+resamples):
+
+| Model | Development (nested LOSO OOF) | Independent Test | Test, window-level |
+|---|---|---|---|
+| Classical | 0.925 [0.888, 0.956] | **0.957** [0.936, 0.975] | 0.929 |
+| Classical+PH | 0.899 [0.799, 0.968] | **0.834** [0.656, 0.943] | 0.892 |
+| Classical (no boundary) | 0.886 [0.830, 0.934] | 0.934 [0.891, 0.966] | 0.900 |
+| Classical+PH (no boundary) | 0.904 [0.846, 0.956] | 0.816 [0.636, 0.937] | 0.864 |
+| PH only | 0.521 [0.363, 0.666] | 0.600 [0.451, 0.737] | 0.579 |
+
+- **Primary comparison (Classical+PH − Classical) on Test:**
+  - subject-equal Δ = **−0.122 [−0.302, −0.017]**;
+  - window-level Δ = **−0.037 [−0.085, −0.004]**.
+  - In Development the subject-equal Δ was −0.026 [−0.091, 0.021].
+  - Adding PH features did not improve PVC detection over classical features. On Test both aggregations favour the
+    classical model.
+- **Error rates on Test (subject-equal):** Classical+PH had C0/C2 FPR of 0.307/0.347, against 0.285/0.329 for
+  Classical, and C1/C3 sensitivity of 0.842/0.825, against 0.949/0.932.
+- **By noise and SNR:** the primary difference is −0.11 to −0.14 in every noise type × SNR cell. The protocol 9-cell
+  summary is −0.126 [−0.305, −0.019].
+
+**Influence of one subject (S230).**
+- S230 contributes a single event. Its per-subject stratified AUROC is 1.000 for Classical and 0.000 for
+  Classical+PH, so its per-subject difference is −1.000. With equal subject weights, this one subject contributes
+  −0.091 of the −0.122.
+- **Post hoc arithmetic:** excluding S230 gives a mean per-subject difference of −0.035. This was not prespecified,
+  has no CI, and is not a replacement for the primary analysis
+  ([`table8_s230_influence.md`](paper/tables/table8_s230_influence.md)).
+- The prespecified window-level difference, to which S230 contributes 38 of 3,040 windows, is −0.037 [−0.085, −0.004].
+- **Interpretation:** the direction (no benefit from PH) is consistent across aggregations, but the subject-equal
+  magnitude depends strongly on a one-event subject.
+
+**Boundary features (possible alignment cue).**
+- On Test, removing the boundary features lowered Classical AUROC by 0.023 [0.002, 0.049] (window-level 0.028
+  [0.010, 0.046]). The Development value was 0.039 [−0.003, 0.085].
+- The boundary features describe RR-interval structure around the window boundary at which a PVC is placed by
+  construction. Part of their contribution may therefore reflect an alignment cue of the window design rather than
+  PVC morphology.
+- The no-boundary models are a mitigation, not a proof that the cue is absent.
+- **Artefact dependence:** AUROC for C3 vs C1 is below 0.5 for the classical models on Test (0.33–0.36). Noisy PVC
+  windows score lower than clean PVC windows.
+
+**Outputs.**
+- **Test results:** predictions, metrics, bootstrap CIs, paired comparisons, the failure log, the evaluable-set
+  summary and the audits are in [`outputs/final_test/`](outputs/final_test/).
+- **Path-sanitized copies:** `run_summary.json` and the pre-/post-run hash records contain local library paths, so
+  only sanitized copies are published, in `outputs/final_test/public/test_run/`.
+- **Not in the repository:** per-job PH diagrams (`.npz`).
+- **Paper tables and figures:** in [`paper/`](paper/), with Development and Test kept separate. They are generated by
+  `tools/make_paper_artifacts.py` from these files only.
 
 ## Installation
 

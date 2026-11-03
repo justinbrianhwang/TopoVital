@@ -44,3 +44,10 @@ outputs/stage1_analysis/**/final_models/
 # Final Test: Development verification originals hold local absolute paths, replayed diagrams and refitted models;
 # the sanitized reports are in outputs/final_test/public/
 outputs/final_test/dev_verification*/
+# Final Test originals with local library paths; sanitized copies are in outputs/final_test/public/test_run/
+outputs/final_test/run_summary.json
+outputs/final_test/hashes/
+outputs/final_test/jobs/
+outputs/final_test/regime1_jobs/
+# Paper prose drafts stay local until the researcher decides to publish them
+paper/drafts/

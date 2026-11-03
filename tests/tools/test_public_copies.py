@@ -11,6 +11,43 @@ from tools.make_public_copies import (make_final_test_public_copy, make_level3_p
 from topovital.util import sha256_file
 
 
+def test_test_run_sanitizes_recursive_paths_and_merges_manifest(tmp_path):
+    root = tmp_path / "Zo챘_횥nal" / "TopoVital"
+    base = root / "outputs/final_test"
+    (base / "hashes").mkdir(parents=True)
+    public = base / "public"
+    public.mkdir()
+    existing = {"files": {"outputs/final_test/public/dev_verification/report.json": {"source_sha256": "keep"}}}
+    (public / "PUBLIC_MANIFEST.json").write_text(json.dumps(existing), encoding="utf-8")
+    private = str(root / "outputs/final_test/jobs/a.json")
+    payload = {"nested": [{private: [r"D:\Python\bin\libopenblas.dll", "Zo챘_횥nal", "unit-host",
+                                    "//server/share/report.json", "/home/person/lib/core.so"]}]}
+    for name in public_copies.TEST_RUN_NAMES:
+        path = base / name
+        path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    before = {name: sha256_file(base / name) for name in public_copies.TEST_RUN_NAMES}
+    manifest = public_copies.make_test_run_public_copy(root, user="Zo챘_횥nal", host="unit-host",
+                                                         home=tmp_path / "Zo챘_횥nal")
+    assert manifest["files"]["outputs/final_test/public/dev_verification/report.json"] == {"source_sha256": "keep"}
+    for name in before:
+        assert sha256_file(base / name) == before[name]
+        data = json.loads((public / "test_run" / name).read_text(encoding="utf-8"))
+        assert data == {"nested": [{"outputs/final_test/jobs/a.json": [
+            "<external>/bin/libopenblas.dll", "<user>", "<host>",
+            "<external>/share/report.json", "<external>/lib/core.so"]}]}
+
+
+def test_test_run_residual_prevents_manifest_write(tmp_path, monkeypatch):
+    base = tmp_path / "outputs/final_test"
+    (base / "hashes").mkdir(parents=True)
+    for name in public_copies.TEST_RUN_NAMES:
+        (base / name).write_text('{"key":"clean"}', encoding="utf-8")
+    monkeypatch.setattr(public_copies, "sanitize_test_value", lambda *a, **k: {"path": "Z:/private/a"})
+    with pytest.raises(RuntimeError, match="Residual"):
+        public_copies.make_test_run_public_copy(tmp_path, user="person", host="machine")
+    assert not (base / "public/PUBLIC_MANIFEST.json").exists()
+
+
 def test_windows_path_with_unicode_user_becomes_posix_repo_path():
     path = r"C:\Users\Zoë_Ünal\Desktop\TopoVital\outputs\stage1_features\job.npz"
     assert repo_relative_path(path) == "outputs/stage1_features/job.npz"
