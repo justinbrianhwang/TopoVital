@@ -1,0 +1,5 @@
+split,pair,subjects,n_subjects,subject_equal_weight_difference,analysis_status
+Independent Test,Classical+PH − Classical,all 11 subjects,11,-0.12248822474874409,"post hoc, not prespecified; no CI computed"
+Independent Test,Classical+PH − Classical,excluding S230,10,-0.03473704722361851,"post hoc, not prespecified; no CI computed"
+Independent Test,Classical+PH (no boundary) − Classical (no boundary),all 11 subjects,11,-0.11801468046487594,"post hoc, not prespecified; no CI computed"
+Independent Test,Classical+PH (no boundary) − Classical (no boundary),excluding S230,10,-0.03259392628914132,"post hoc, not prespecified; no CI computed"

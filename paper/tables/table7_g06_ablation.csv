@@ -1,0 +1,15 @@
+split,ablation,reference,aggregation,delta_auroc,ci_low,ci_high,delta_c0_fpr,delta_c2_fpr
+Development (nested LOSO OOF),classical_only__minus_A_rhythm,Classical,subject_equal_weight,0.0372606435536989,-0.010926555661447,0.1076813197288648,-0.1592631889183613,-0.1514826822106515
+Development (nested LOSO OOF),classical_only__minus_B_qrs_template,Classical,subject_equal_weight,0.0621695390362015,-0.0021322991295528,0.1517827500446424,-0.2396203949307397,-0.2041768892381918
+Development (nested LOSO OOF),classical_only__minus_C_amplitude,Classical,subject_equal_weight,0.0103572723940132,-0.0038200071638593,0.029187951193578,0.004022792022792,0.0147001233476328
+Development (nested LOSO OOF),classical_only__minus_D_dwt,Classical,subject_equal_weight,0.0103745247254718,-0.0105254485060096,0.036466444711172,-0.2026621475586992,-0.1895647684230059
+Development (nested LOSO OOF),classical_only__minus_E_psd,Classical,subject_equal_weight,0.0023001836794559,-0.0037001883413337,0.0124412813756439,-0.0115270655270655,-0.0088023708943248
+Development (nested LOSO OOF),classical_only__minus_F_spectral_entropy,Classical,subject_equal_weight,-0.0002748182591593,-0.0024322533647148,0.0015016478131039,0.0,-0.0009280326598334
+Development (nested LOSO OOF),classical_only__minus_G_sqi,Classical,subject_equal_weight,0.0184237014428554,0.0027112748066897,0.0392097501863068,-0.0442774339326063,-0.0552881095065003
+Development (nested LOSO OOF),classical_only_no_boundary__minus_A_rhythm,Classical (no boundary),subject_equal_weight,0.001412022043697,-0.0271411913181114,0.0312843513044173,-0.1772567049808429,-0.1277807468535438
+Development (nested LOSO OOF),classical_only_no_boundary__minus_B_qrs_template,Classical (no boundary),subject_equal_weight,0.0289395476684029,-0.0374677002657659,0.0948167201649733,-0.1255671480499067,-0.0873807621355515
+Development (nested LOSO OOF),classical_only_no_boundary__minus_C_amplitude,Classical (no boundary),subject_equal_weight,-0.0101035984716291,-0.0282665592271268,0.0033859860487884,0.0092050299636506,0.005695102116558
+Development (nested LOSO OOF),classical_only_no_boundary__minus_D_dwt,Classical (no boundary),subject_equal_weight,0.0105658513567507,-0.0271738225959784,0.060554940562735,-0.1722566067393653,-0.1617095545294779
+Development (nested LOSO OOF),classical_only_no_boundary__minus_E_psd,Classical (no boundary),subject_equal_weight,-0.0111909500037954,-0.0304877052050349,0.0045249423185069,0.0199477355339424,0.0140316446714913
+Development (nested LOSO OOF),classical_only_no_boundary__minus_F_spectral_entropy,Classical (no boundary),subject_equal_weight,-0.0139599009594411,-0.0401169151341096,-0.0003695349973381,0.0123978779840848,0.0132062743556994
+Development (nested LOSO OOF),classical_only_no_boundary__minus_G_sqi,Classical (no boundary),subject_equal_weight,-0.0011408956620418,-0.0168144706497722,0.0149763768607729,0.0098878082326357,-0.007761153136632
