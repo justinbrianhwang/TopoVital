@@ -579,7 +579,7 @@ resamples):
   construction. Part of their contribution may therefore reflect an alignment cue of the window design rather than
   PVC morphology.
 - The no-boundary models are a mitigation, not a proof that the cue is absent.
-- **Artefact dependence:** AUROC for C3 vs C1 is below 0.5 for the classical models on Test (0.33–0.36). Noisy PVC
+- **Artefact dependence:** AUROC for C3 vs C1 is below 0.5 on Test for the four models with classical features (0.32–0.36). Noisy PVC
   windows score lower than clean PVC windows.
 
 **Outputs.**
