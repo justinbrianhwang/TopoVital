@@ -1,8 +1,56 @@
 import pandas as pd
 import pytest
 import re
+import shutil
+import sys
+from pathlib import Path
 
 import tools.make_paper_artifacts as paper
+
+
+def copy_inputs(root):
+    for mapping in paper.INPUTS.values():
+        for relative in mapping.values():
+            source = paper.ROOT / "outputs" / relative
+            target = root / "outputs" / relative
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+
+
+def test_figure_text_uses_display_labels(tmp_path, monkeypatch):
+    data, _ = paper.load_inputs()
+    captured = []
+    monkeypatch.setattr(paper, "save_figure", lambda fig, base: captured.append(fig))
+    paper.fig_model_auroc(data, tmp_path / "fig1")
+    paper.fig_paired(paper.comparison_table(data), tmp_path / "fig2")
+    paper.fig_by_snr(data["test"], paper.T, tmp_path / "fig3")
+    paper.fig_subject(paper.subject_table(data["test"]), tmp_path / "fig4")
+    paper.fig_by_snr(data["dev"], paper.D, tmp_path / "fig5")
+    forbidden = ("subject_equal_weight", "window_level", "stratified_auroc", "bw", "ma", "em")
+    for fig in captured:
+        texts = fig.findobj(match=paper.matplotlib.text.Text)
+        for artist in texts:
+            value = artist.get_text()
+            assert "_" not in value
+            assert not any(token == value or token in value.split() for token in forbidden)
+        paper.plt.close(fig)
+    assert "−" in paper.comparison_table(data).pair.iloc[0]
+
+
+def test_build_is_deterministic_and_tables_unchanged(tmp_path):
+    if sys.platform == "win32":
+        tmp_path = Path("\\\\?\\" + str(tmp_path))
+    roots = [tmp_path / "first", tmp_path / "second"]
+    original = paper.json.loads((paper.ROOT / "paper/ARTIFACT_MANIFEST.json").read_text(encoding="utf-8"))
+    for root in roots:
+        copy_inputs(root)
+    results = [paper.build(root) for root in roots]
+    assert results[0]["outputs"] == results[1]["outputs"]
+    for name, digest in original["outputs"].items():
+        if name.startswith("paper/tables/"):
+            assert results[0]["outputs"][name] == digest
+    assert all(any(name.endswith("." + ext) for name in results[0]["outputs"])
+               for ext in ("png", "pdf", "svg"))
 
 
 def metric_frame(value):

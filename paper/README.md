@@ -16,11 +16,13 @@ Tables and figures are generated from existing results.
 
 ## Figures
 
-- `fig1_model_auroc`: Development and Test metrics and bootstrap CIs.
-- `fig2_paired_differences`: Development and Test paired comparisons.
-- `fig3_test_auroc_by_snr`: Test subject-equal metrics.
-- `fig4_test_per_subject_difference`: Test per-subject metrics and event manifest.
-- `fig5_dev_auroc_by_snr`: Development subject-equal metrics.
+- `fig1_model_auroc.png`, `fig1_model_auroc.pdf`, `fig1_model_auroc.svg`: Development and Test metrics and bootstrap CIs.
+- `fig2_paired_differences.png`, `fig2_paired_differences.pdf`, `fig2_paired_differences.svg`: Development and Test paired comparisons.
+- `fig3_test_auroc_by_snr.png`, `fig3_test_auroc_by_snr.pdf`, `fig3_test_auroc_by_snr.svg`: Test subject-equal metrics.
+- `fig4_test_per_subject_difference.png`, `fig4_test_per_subject_difference.pdf`, `fig4_test_per_subject_difference.svg`: Test per-subject metrics and event manifest.
+- `fig5_dev_auroc_by_snr.png`, `fig5_dev_auroc_by_snr.pdf`, `fig5_dev_auroc_by_snr.svg`: Development subject-equal metrics.
+
+Figures use display labels for aggregation, noise type, metric, and model pairs.
 
 ## Sources
 

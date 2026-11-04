@@ -9,6 +9,7 @@ from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 import numpy as np
 import pandas as pd
 
@@ -23,6 +24,15 @@ MODELS = {
     "classical_plus_ph_no_boundary": ("Classical+PH (no boundary)", "#eda100"),
     "ph_only": ("PH only", "#e87ba4"),
 }
+MODEL_STYLES = {
+    "classical_only": ("solid", "o"),
+    "classical_plus_ph": ((0, (5, 2)), "s"),
+    "classical_only_no_boundary": ((0, (1, 1.5)), "^"),
+    "classical_plus_ph_no_boundary": ((0, (5, 1.5, 1, 1.5)), "D"),
+    "ph_only": ((0, (8, 2)), "v"),
+}
+NOISE_LABELS = {"bw": "Baseline wander (BW)", "ma": "Muscle artefact (MA)",
+                "em": "Electrode motion (EM)"}
 PAIRS = [
     ("classical_plus_ph", "classical_only"),
     ("classical_plus_ph", "ph_only"),
@@ -243,38 +253,71 @@ def style_axis(ax, *, xgrid=True):
         ax.set_axisbelow(True)
 
 
+def figure_style():
+    plt.rcParams.update({"font.family": "DejaVu Sans", "font.size": 8,
+                         "axes.labelsize": 8, "axes.titlesize": 9,
+                         "xtick.labelsize": 7.5, "ytick.labelsize": 7.5,
+                         "legend.fontsize": 7.5, "pdf.fonttype": 42,
+                         "ps.fonttype": 42, "svg.fonttype": "none",
+                         "svg.hashsalt": "topovital", "lines.linewidth": 1.5,
+                         "lines.markersize": 5})
+
+
+def panel_letter(ax, letter, x=-.06):
+    ax.text(x, 1.04, letter, transform=ax.transAxes, fontweight="bold",
+            ha="left", va="bottom")
+
+
+def aggregation_handles(*, paired=False):
+    labels = ["Subject-equal weighting (95 % CI)",
+              "Window-level (pooled, 95 % CI)" if paired else "Window-level (pooled)"]
+    return [Line2D([], [], color="#52514e", marker="o", linestyle="none", markersize=5),
+            Line2D([], [], color="#52514e", marker="s" if paired else "o",
+                   linestyle="none", markerfacecolor="white", markersize=5)], labels
+
+
 def save_figure(fig, base):
     fig.patch.set_facecolor("#fcfcfb")
-    fig.savefig(base.with_suffix(".png"), dpi=300, bbox_inches="tight", facecolor="#fcfcfb")
-    fig.savefig(base.with_suffix(".pdf"), bbox_inches="tight", facecolor="#fcfcfb",
+    common = {"bbox_inches": "tight", "pad_inches": .03, "facecolor": "#fcfcfb"}
+    fig.savefig(base.with_suffix(".png"), dpi=600, metadata={"Software": None}, **common)
+    fig.savefig(base.with_suffix(".pdf"), **common,
                 metadata={"CreationDate": datetime(2000, 1, 1, tzinfo=timezone.utc),
                           "ModDate": datetime(2000, 1, 1, tzinfo=timezone.utc)})
+    fig.savefig(base.with_suffix(".svg"), metadata={"Date": None}, **common)
     plt.close(fig)
 
 
 def fig_model_auroc(data, base):
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5.4), sharex=True, sharey=True)
+    figure_style()
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.0), sharex=True, sharey=True,
+                             layout="constrained")
     for ax, (split, source) in zip(axes, ((D, data["dev"]), (T, data["test"]))):
         for i, (model, (name, color)) in enumerate(MODELS.items()):
-            s = overall(source["metrics_subject"], model=model, rule="primary", metric="stratified_auroc")
-            w = overall(source["metrics_window"], model=model, rule="primary", metric="stratified_auroc")
+            marker = MODEL_STYLES[model][1]
+            subject = overall(source["metrics_subject"], model=model, rule="primary", metric="stratified_auroc")
+            window = overall(source["metrics_window"], model=model, rule="primary", metric="stratified_auroc")
             ci = overall(source["bootstrap_ci"], model=model, rule="primary", metric="stratified_auroc")
-            ax.errorbar(s.value, i - .13, xerr=[[s.value-ci.ci_low], [ci.ci_high-s.value]],
-                        fmt="o", color=color, markersize=8, elinewidth=1.5, capsize=3,
-                        label="subject_equal_weight" if i == 0 else None)
-            ax.plot(w.value, i + .13, "s", color=color, markersize=8,
-                    label="window_level" if i == 0 else None)
+            ax.errorbar(subject.value, i - .13,
+                        xerr=[[subject.value-ci.ci_low], [ci.ci_high-subject.value]],
+                        fmt=marker, color=color, markersize=5, elinewidth=1, capsize=2.5)
+            ax.plot(window.value, i + .13, marker=marker, linestyle="none",
+                    color=color, markerfacecolor="white", markersize=5)
         ax.set_yticks(range(len(MODELS)), [v[0] for v in MODELS.values()])
-        ax.set_title(split); ax.set_xlabel("Stratified AUROC")
+        ax.set_title(split)
+        ax.set_xlabel("Stratified AUROC")
         style_axis(ax)
     axes[0].invert_yaxis()
-    handles, labels = axes[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc="lower center", ncol=2, frameon=False)
-    fig.tight_layout(rect=[0, .07, 1, 1]); save_figure(fig, base)
+    for ax, letter in zip(axes, "ab"):
+        panel_letter(ax, letter)
+    handles, labels = aggregation_handles()
+    fig.legend(handles, labels, loc="outside lower center", ncol=2, frameon=False)
+    save_figure(fig, base)
 
 
 def fig_paired(table, base):
-    fig, axes = plt.subplots(1, 2, figsize=(15, 6), sharex=True, sharey=True)
+    figure_style()
+    fig, axes = plt.subplots(1, 2, figsize=(7.2, 3.6), sharex=True, sharey=True,
+                             layout="constrained")
     for ax, split in zip(axes, (D, T)):
         for i, row in table.iterrows():
             for aggregation, offset, marker in (("subject_equal_weight", -.14, "o"),
@@ -284,51 +327,70 @@ def fig_paired(table, base):
                 ax.errorbar(value, i + offset,
                             xerr=[[value-row[prefix+"ci_low"]], [row[prefix+"ci_high"]-value]],
                             fmt=marker, color="#eb6834" if i == 0 else "#52514e",
-                            markersize=8, elinewidth=1.5, capsize=3,
-                            label=aggregation if i == 0 else None)
-        ax.axvline(0, color="#0b0b0b", linewidth=1.2)
-        ax.set_yticks(range(len(table)), table.pair)
-        ax.set_title(split); ax.set_xlabel("Paired stratified AUROC difference")
-        style_axis(ax); ax.legend(frameon=False)
+                            markerfacecolor="white" if aggregation == "window_level" else None,
+                            markersize=5, elinewidth=1, capsize=2.5)
+        ax.axvline(0, color="#0b0b0b", linewidth=.8)
+        ax.set_yticks(range(len(table)), [pair + (" (primary)" if i == 0 else "")
+                                           for i, pair in enumerate(table.pair)])
+        ax.set_title(split)
+        ax.set_xlabel("Paired difference in stratified AUROC")
+        style_axis(ax)
         if ax.get_yticklabels():
             ax.get_yticklabels()[0].set_fontweight("bold")
     axes[0].invert_yaxis()
-    fig.tight_layout(); save_figure(fig, base)
+    for ax, letter in zip(axes, "ab"):
+        panel_letter(ax, letter, x=-.3 if letter == "a" else -.06)
+    handles, labels = aggregation_handles(paired=True)
+    fig.legend(handles, labels, loc="outside lower center", ncol=2, frameon=False)
+    save_figure(fig, base)
 
 
 def fig_by_snr(source, title, base):
-    fig, axes = plt.subplots(1, 3, figsize=(16, 5), sharey=True)
+    figure_style()
+    fig, axes = plt.subplots(1, 3, figsize=(7.2, 2.9), sharey=True,
+                             layout="constrained")
     for ax, noise in zip(axes, ("bw", "ma", "em")):
-        endpoints = []
         for model, (name, color) in MODELS.items():
             values = [select(source["metrics_subject"], model=model, noise_type=noise,
                              snr_target=str(s), rule="primary", metric="stratified_auroc").value for s in SNR]
-            ax.plot(SNR, values, color=color, linewidth=2, marker="o", markersize=8)
-            endpoints.append((values[-1], name, color))
-        previous = -float("inf")
-        for value, name, color in sorted(endpoints):
-            label_y = max(value, previous + .018)
-            ax.plot([-6, -7], [value, label_y], color=color, linewidth=.8)
-            ax.text(-7.3, label_y, name, fontsize=8, color=color, va="center")
-            previous = label_y
-        ax.set_xlim(26, -22); ax.set_xticks(SNR); ax.set_title(f"{title} · {noise}")
-        ax.set_xlabel("SNR (dB)"); style_axis(ax)
-    axes[0].set_ylabel("Subject-equal stratified AUROC")
-    fig.text(.5, .005, "Circle markers: subject_equal_weight", ha="center", fontsize=9, color="#52514e")
-    fig.tight_layout(rect=[0, .035, 1, 1]); save_figure(fig, base)
+            ax.plot(SNR, values, color=color, linestyle=MODEL_STYLES[model][0],
+                    marker=MODEL_STYLES[model][1])
+        ax.set_xlim(26, -8)
+        ax.set_xticks(SNR)
+        ax.set_title(NOISE_LABELS[noise])
+        ax.set_xlabel("SNR (dB)")
+        style_axis(ax)
+    for ax, letter in zip(axes, "abc"):
+        panel_letter(ax, letter)
+    axes[0].set_ylabel("Stratified AUROC (subject-equal weighting)")
+    fig.suptitle(title)
+    handles = [Line2D([], [], color=color, linestyle=MODEL_STYLES[model][0],
+                      marker=MODEL_STYLES[model][1]) for model, (_, color) in MODELS.items()]
+    fig.legend(handles, [name for name, _ in MODELS.values()], loc="outside lower center",
+               ncol=5, frameon=False)
+    save_figure(fig, base)
 
 
 def fig_subject(table, base):
-    fig, ax = plt.subplots(figsize=(9, 6))
+    figure_style()
+    fig, ax = plt.subplots(figsize=(3.5, 3.6))
     y = np.arange(len(table))
-    ax.scatter(table.primary_difference, y, s=70, color="#eb6834")
+    ax.plot(table.primary_difference, y, linestyle="none", marker="s",
+            markersize=5, color="#eb6834")
     for i, row in table.iterrows():
-        ax.annotate(f"n={row.events}", (row.primary_difference, i),
-                    xytext=(7, 0), textcoords="offset points", va="center", fontsize=8)
-    ax.axvline(0, color="#0b0b0b", linewidth=1.2)
-    ax.set_yticks(y, table.subject_id); ax.invert_yaxis()
-    ax.set_title(T); ax.set_xlabel("Classical+PH − Classical, stratified AUROC")
-    style_axis(ax); fig.tight_layout(); save_figure(fig, base)
+        ax.text(1.02, i, str(int(row.events)), transform=ax.get_yaxis_transform(),
+                clip_on=False, va="center", ha="left")
+    ax.text(1.02, 1.02, "Events", transform=ax.transAxes, clip_on=False,
+            ha="left", va="bottom")
+    ax.axvline(0, color="#0b0b0b", linewidth=.8)
+    ax.margins(x=.06)
+    ax.set_yticks(y, table.subject_id)
+    ax.invert_yaxis()
+    ax.set_title(T)
+    ax.set_xlabel("Per-subject difference in stratified AUROC\n(Classical+PH \u2212 Classical)")
+    style_axis(ax)
+    fig.tight_layout(rect=[0, 0, .91, 1])
+    save_figure(fig, base)
 
 
 INPUTS = {
@@ -405,13 +467,17 @@ def build(root=ROOT):
     readme = ["# Paper artifacts", "", "Tables and figures are generated from existing results.", "",
               "## Tables", ""]
     readme += [f"- `{name}`: {caption}." for name, (_, caption) in products.items()]
-    readme += ["", "## Figures", "",
-               "- `fig1_model_auroc`: Development and Test metrics and bootstrap CIs.",
-               "- `fig2_paired_differences`: Development and Test paired comparisons.",
-               "- `fig3_test_auroc_by_snr`: Test subject-equal metrics.",
-               "- `fig4_test_per_subject_difference`: Test per-subject metrics and event manifest.",
-               "- `fig5_dev_auroc_by_snr`: Development subject-equal metrics.", "",
-               "## Sources", ""]
+    readme += ["", "## Figures", ""]
+    for name, description in (
+        ("fig1_model_auroc", "Development and Test metrics and bootstrap CIs"),
+        ("fig2_paired_differences", "Development and Test paired comparisons"),
+        ("fig3_test_auroc_by_snr", "Test subject-equal metrics"),
+        ("fig4_test_per_subject_difference", "Test per-subject metrics and event manifest"),
+        ("fig5_dev_auroc_by_snr", "Development subject-equal metrics"),
+    ):
+        readme.append(f"- `{name}.png`, `{name}.pdf`, `{name}.svg`: {description}.")
+    readme += ["", "Figures use display labels for aggregation, noise type, metric, and model pairs.",
+               "", "## Sources", ""]
     readme += [f"- `{name}`" for name in sorted(inputs)]
     (paper / "README.md").write_text("\n".join(readme) + "\n", encoding="utf-8")
     outputs = {p.relative_to(root).as_posix(): sha256_file(p)

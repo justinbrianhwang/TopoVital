@@ -6,17 +6,21 @@ TopoVital studies whether topological data analysis (persistent homology) can se
 noise, baseline wander, clipping and time-warping artefacts in short ECG windows. This repository implements and
 documents **Stage 0** of the experimental protocol: cohort construction, event eligibility, normal-window matching,
 guard-interval (`g_star`) selection on Development data only, and a locked Development/Test gate. It also contains
-the **Stage 1** topological feature extraction, which is in progress on Development data.
+the **Stage 1** topological and classical feature extraction, the Development analyses, and the single
+prespecified evaluation on the independent Test split.
 
-> **Status (2026-11-02):**
+> **Status (2026-11-04):**
 > - **Stage 0** is complete and **frozen** with `g_star = 250 ms`. The Test split was processed exactly once with the frozen configuration.
-> - **Stage 1 (Development only):**
+> - **Stage 1, Development:**
 >   - Clean-window persistent homology (C0/C1) is complete: 504 / 504 jobs succeeded.
 >   - Regime 1 artefact injection (C2/C3, NSTDB `bw` / `ma` / `em`) is complete: 4,536 / 4,536 jobs succeeded.
-> - **Level 1** (pre/post PH distances) and **Level 2** (persistence images with nested subject-level CV) analyses on Development are complete. The Level 2 C1-vs-C2 result has a known confound (see its limitation note).
-> - The **factorial C0–C3** analysis on Development is complete. It reduced the score dependence on artefact, but improved PVC detection was not shown.
-> - The **Level 3** classical baseline comparison on Development is complete. Persistent homology did not add PVC-detection value over classical features, and the PH-only model has a documented thread-environment reproducibility exception.
-> - Test remains locked for Stage 1. Regime 2/3 and Test evaluation have not started.
+>   - **Level 1** (pre/post PH distances) and **Level 2** (persistence images with nested subject-level CV) are complete. The Level 2 C1-vs-C2 result has a known confound (see its limitation note).
+>   - The **factorial C0–C3** analysis is complete. It reduced the score dependence on artefact, but improved PVC detection was not shown.
+>   - The **Level 3** classical baseline comparison is complete. Persistent homology did not add PVC-detection value over classical features, and the PH-only model has a documented thread-environment reproducibility exception.
+>   - The **G-06** feature-group ablation (exploratory) is complete.
+> - **Stage 1, independent Test:** frozen settings and models were evaluated **once** (see [Final Test evaluation: results](#final-test-evaluation-results-independent-test-run-once)). Test is not to be rerun.
+> - Regime 2/3 analyses have not been run.
+> - Paper tables and figures generated from these results are in [`paper/`](paper/).
 > - The authoritative progress record is [`outputs/stage1_status.yaml`](outputs/stage1_status.yaml).
 
 <p align="center">
@@ -78,7 +82,7 @@ Split: subject-grouped and stratified by step-1 PVC count (strata 0 / 1–88 / >
 
 Full numbers are in [`outputs/attrition_summary.csv`](outputs/attrition_summary.csv) and [`outputs/stage0_report.md`](outputs/stage0_report.md). Every decision and deviation is logged in [`outputs/implementation_decisions.md`](outputs/implementation_decisions.md).
 
-## Stage 1 results (Development, in progress)
+## Stage 1 results (Development)
 
 Stage 1 uses the 126 Development Common-cohort events at `g = 250 ms`. C1 is the PVC window and C0 its matched normal window. Each window is split at `t0` into a pre half and a post half, and each half is analysed separately.
 
