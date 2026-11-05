@@ -53,6 +53,13 @@ def _regression(base, frame, reference, cfg):
         raise BlockedError("BaseFit(S105) regression against Level 3 failed")
 
 
+def threshold_target(factorial_cfg):
+    try:
+        return float(factorial_cfg["thresholds"]["primary"]["target"])
+    except (KeyError, TypeError):
+        raise BlockedError("factorial primary threshold target missing") from None
+
+
 def run_pilot(root, cfg):
     root = Path(root)
     if not cfg["approved_for_pilot"] or cfg["nesting"]["workers"] != 1:
@@ -100,10 +107,7 @@ def run_pilot(root, cfg):
     started = _stage("inputs", timings, started)
 
     factorial = load_yaml(root / "configs/stage1_factorial.yaml")
-    target = factorial["thresholds"]["primary"]["target"] if isinstance(factorial.get("thresholds"), dict) else None
-    if target is None:
-        from topovital_analysis.factorial import _primary_target
-        target = _primary_target(factorial)
+    target = threshold_target(factorial)
     reference = pd.read_parquet(root / cfg["inputs"]["level3_reference"])
     def log_stage(name):
         nonlocal started

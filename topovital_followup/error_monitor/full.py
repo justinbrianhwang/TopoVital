@@ -23,7 +23,7 @@ from topovital_analysis.runtime import verify_blas_threads, blas_thread_report
 from .aggregate import aggregate_folds
 from .audit import assert_unchanged, file_hashes, manifest, sha
 from .core import BaseFitStore
-from .pilot import compute_fold, _csv, _json
+from .pilot import compute_fold, threshold_target, _csv, _json
 
 CONFIG = "configs/followup_error_monitor_v0_1.yaml"
 PATHS = ("topovital_followup", CONFIG)
@@ -127,8 +127,7 @@ def run_full(root, cfg):
     _json(out / "input_manifest.json", inputs)
     subjects = sorted({w["subject_id"] for w in windows})
     factorial = load_yaml(root / "configs/stage1_factorial.yaml")
-    from topovital_analysis.factorial import _primary_target
-    target = factorial["thresholds"]["primary"]["target"] if isinstance(factorial.get("thresholds"), dict) else _primary_target(factorial)
+    target = threshold_target(factorial)
     reference = pd.read_parquet(root / cfg["inputs"]["level3_reference"])
     pilot = pd.read_parquet(root / cfg["output_dir"] / "pilot_predictions.parquet")
     store = BaseFitStore(windows, classical, cfg["base_model"]["c_grid"], target,

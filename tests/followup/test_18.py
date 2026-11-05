@@ -1,16 +1,46 @@
 import json
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
 from topovital.cohort import BlockedError
+from topovital.util import load_yaml
 from topovital_followup.error_monitor.aggregate import aggregate_folds, bootstrap, _decomposition, _swap
 from topovital_followup.error_monitor.full import check_full
 from topovital_followup.error_monitor import full as full_module
 from topovital_followup.error_monitor.core import BaseFitStore
-from topovital_followup.error_monitor.pilot import compute_fold
+from topovital_followup.error_monitor.pilot import compute_fold, threshold_target
 from conftest import synthetic
+
+
+def test_threshold_target_real_config():
+    root = Path(__file__).resolve().parents[2]
+    assert threshold_target(load_yaml(root / "configs/stage1_factorial.yaml")) == 0.9
+    with pytest.raises(BlockedError, match="target missing"):
+        threshold_target({})
+
+
+def test_full_startup_reaches_target(tmp_path, monkeypatch):
+    class TargetReached(Exception):
+        pass
+
+    cfg = {"full_run": {"output_dir": "full"}, "protected": []}
+    identity = {"code_files": {}, "config_sha256": "config", "code_sha256": "code"}
+    monkeypatch.setattr(full_module, "check_full", lambda root, config: (identity, True))
+    monkeypatch.setattr(full_module, "file_hashes", lambda root, paths: {})
+    monkeypatch.setattr(full_module, "_inputs", lambda root, config, code: ([{"subject_id": "S00"}], None, "feature", {}))
+    factorial = load_yaml(Path(__file__).resolve().parents[2] / "configs/stage1_factorial.yaml")
+    monkeypatch.setattr(full_module, "load_yaml", lambda path: factorial)
+
+    def reached(factorial_cfg):
+        assert threshold_target(factorial_cfg) == 0.9
+        raise TargetReached
+
+    monkeypatch.setattr(full_module, "threshold_target", reached)
+    with pytest.raises(TargetReached):
+        full_module.run_full(tmp_path, cfg)
 
 
 def test_full_guards(tmp_path):
