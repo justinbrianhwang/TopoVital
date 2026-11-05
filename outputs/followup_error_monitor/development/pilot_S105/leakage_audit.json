@@ -1,0 +1,140 @@
+[
+  {
+    "detail": "base:S116,S123,S210,S213,S215,S219,S221,S233,S234",
+    "n_checked": 1102,
+    "name": "level3_regression",
+    "passed": true
+  },
+  {
+    "detail": "row subject absent from generating fit",
+    "n_checked": 33174,
+    "name": "error_row_provenance",
+    "passed": true
+  },
+  {
+    "detail": "training subjects=8",
+    "n_checked": 3686,
+    "name": "inner_provenance:S116",
+    "passed": true
+  },
+  {
+    "detail": "training subjects=8",
+    "n_checked": 3686,
+    "name": "inner_provenance:S123",
+    "passed": true
+  },
+  {
+    "detail": "training subjects=8",
+    "n_checked": 3686,
+    "name": "inner_provenance:S210",
+    "passed": true
+  },
+  {
+    "detail": "training subjects=8",
+    "n_checked": 3686,
+    "name": "inner_provenance:S213",
+    "passed": true
+  },
+  {
+    "detail": "training subjects=8",
+    "n_checked": 3686,
+    "name": "inner_provenance:S215",
+    "passed": true
+  },
+  {
+    "detail": "training subjects=8",
+    "n_checked": 3686,
+    "name": "inner_provenance:S219",
+    "passed": true
+  },
+  {
+    "detail": "training subjects=8",
+    "n_checked": 3686,
+    "name": "inner_provenance:S221",
+    "passed": true
+  },
+  {
+    "detail": "training subjects=8",
+    "n_checked": 3686,
+    "name": "inner_provenance:S233",
+    "passed": true
+  },
+  {
+    "detail": "training subjects=8",
+    "n_checked": 3686,
+    "name": "inner_provenance:S234",
+    "passed": true
+  },
+  {
+    "detail": "max difference <=1e-12",
+    "n_checked": 1102,
+    "name": "determinism",
+    "passed": true
+  },
+  {
+    "detail": "outer=S105",
+    "n_checked": 731,
+    "name": "outer_provenance",
+    "passed": true
+  },
+  {
+    "detail": "first=d, last=amplitude__range__diff",
+    "n_checked": 28,
+    "name": "features:M1",
+    "passed": true
+  },
+  {
+    "detail": "first=d, last=boundary_missing",
+    "n_checked": 101,
+    "name": "features:M2",
+    "passed": true
+  },
+  {
+    "detail": "first=pi__0, last=pi__929",
+    "n_checked": 930,
+    "name": "features:M3",
+    "passed": true
+  },
+  {
+    "detail": "first=d, last=pi__929",
+    "n_checked": 1031,
+    "name": "features:M4",
+    "passed": true
+  },
+  {
+    "detail": "006f2d6ac0541c8e77b210631d2d0414ac2992a49427e805dde0e400408f4770",
+    "n_checked": 5,
+    "name": "identical_base_predictions",
+    "passed": true
+  },
+  {
+    "detail": "compute_fold accepts in-memory inputs only",
+    "n_checked": 0,
+    "name": "full_final_model_never_opened",
+    "passed": true
+  },
+  {
+    "detail": "table subjects match role",
+    "n_checked": 33174,
+    "name": "subject_block_integrity",
+    "passed": true
+  },
+  {
+    "detail": "feature names checked",
+    "n_checked": 2090,
+    "name": "forbidden_features",
+    "passed": true
+  },
+  {
+    "detail": "unit F-01 checks recorded",
+    "n_checked": 646,
+    "name": "weights",
+    "passed": true
+  },
+  {
+    "detail": "{'env': {'OMP_NUM_THREADS': '1', 'OPENBLAS_NUM_THREADS': '1', 'MKL_NUM_THREADS': '1', 'NUMEXPR_NUM_THREADS': '1', 'VECLIB_MAXIMUM_THREADS': '1'}, 'threadpools': [('openblas', 1), ('openmp', 1), ('openblas', 1)]}",
+    "n_checked": 1,
+    "name": "blas",
+    "passed": true
+  }
+]

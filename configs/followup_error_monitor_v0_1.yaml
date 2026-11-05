@@ -1,0 +1,167 @@
+# TopoVital follow-up study v0.1: error monitoring and selective prediction with topological features.
+# A NEW, adaptively developed Development-only exploratory study. It is not part of the frozen TopoVital protocol,
+# it does not change any earlier setting or result, and it is not an independent validation.
+# Source tags: [FU-P] specified in the follow-up prompt v0.1 (researcher, 2026-11-04) · [IMPL] implementation detail
+# fixed here before any pilot result was seen · [L3] inherited unchanged from configs/stage1_level3.yaml and the configs
+# it inherits (stage1_factorial.yaml, stage1_analysis.yaml).
+
+status: approved_for_pilot           # [FU-P] researcher message 2026-11-04: implement, test, run the S105 pilot, report, stop
+approved_for_pilot: true
+approved_for_full_run: false         # [FU-P] the full 10-fold outer LOSO and any external data are not approved
+version: "0.1"
+
+# E-01 task and scope ------------------------------------------------------------------------------------------
+scope:                               # [FU-P]
+  question: "Does PH add information beyond model margin, classical features and SQI when predicting the errors of a fixed classical PVC pipeline?"
+  data: development_only             # the 10 Development subjects, C0-C3, 126 events, 4,788 windows
+  expected_counts: {subjects: 10, events: 126, windows: 4788, C0: 126, C1: 126, C2: 2268, C3: 2268, npz_jobs: 5040}
+  test_split: never_read             # no Test signal, PH, prediction or metric; enforced by the event list split check
+  nstdb: not_read                    # features and diagrams already exist; no waveform is regenerated
+  new_ph_computation: none           # PIs are built from the existing 5,040 Development diagrams
+  independent_validation: false      # the Development results have been inspected many times; adaptive analysis
+
+inputs:                              # read-only; hashed before and after the run
+  events: outputs/development/event_audit_dev.parquet
+  classical_features: outputs/stage1_analysis/development/level3_features/classical_features.parquet
+  classical_features_summary: outputs/stage1_analysis/development/level3_features/extraction_summary.json
+  diagrams: [outputs/stage1_features/development/jobs, outputs/stage1_features/development/regime1_jobs]
+  level3_reference: outputs/stage1_analysis/development/level3/oof_predictions.parquet   # regression check only (E-02)
+  configs: [configs/stage1_level3.yaml, configs/stage1_factorial.yaml, configs/stage1_analysis.yaml]
+
+protected:                           # SHA256 before and after; any change fails the run
+  - configs/stage0.yaml
+  - configs/stage1.yaml
+  - configs/stage1_regime1.yaml
+  - configs/stage1_analysis.yaml
+  - configs/stage1_factorial.yaml
+  - configs/stage1_level3.yaml
+  - configs/stage1_g06_ablation.yaml
+  - configs/final_test_evaluation.yaml
+  - outputs/locked_config.yaml
+  - outputs/stage0_freeze_record.json
+  - outputs/input_checksums.csv
+  - outputs/development/**
+  - outputs/stage1_features/**
+  - outputs/stage1_analysis/**
+  - outputs/final_test/**
+  - data/raw/**
+  - topovital/**/*.py
+  - topovital_stage1/**/*.py
+  - topovital_analysis/**/*.py
+  - topovital_final/**/*.py
+
+output_dir: outputs/followup_error_monitor/development/pilot_S105   # new directory; nothing is written elsewhere
+
+# E-02 fixed base PVC pipeline -----------------------------------------------------------------------------------
+base_model:                          # [FU-P][L3] Level 3 classical_only training algorithm and selection rules, refitted
+  model: classical_only              # all 97 classical columns incl. boundary features and the 7 missing indicators
+  labels: {positive: [C1, C3], negative: [C0, C2]}
+  imputation: training_rows_median_unweighted          # [L3] per fit, training rows only
+  standardization: standard_scaler_unweighted_in_pipeline   # [L3]
+  classifier: {kind: l2_logistic_regression, solver: lbfgs, max_iter: 5000}
+  c_grid: [0.001, 0.01, 0.1, 1, 10]  # [L3]
+  weights: F-01                      # [L3] factorial weights, rescaled to mean 1 for the fit
+  selection: "inner LOSO over A; subject-equal mean stratified AUROC (F-02); tie -> smaller C"   # [L3]
+  threshold: "F-03 primary rule on the pooled inner OOF scores of A at the selected C"           # [L3]
+  final_fit: "all rows of A at the selected C"
+  full_development_final_model: never_used             # [FU-P] outputs/.../level3/final_models are not loaded
+  regression_check:                  # [IMPL] BaseFit(Development \ {S105}) must equal Level 3 outer_S105 classical_only
+    reference_fold: outer_S105
+    compare: [selected_C, threshold_primary, score]
+    tolerance_abs: 1.0e-12
+    on_failure: stop_before_monitor_stage   # results are not interpreted until the cause is known
+  no_boundary_variant: not_used      # [FU-P] alignment-cue limitation of Level 3 still applies
+
+# E-03 monitors and the primary comparison -------------------------------------------------------------------------
+score_features:                      # [FU-P] z = decision_function of the base pipeline, theta = base threshold
+  d: "z - logit(theta)"
+  abs_d: "|d|"
+  p: "predict_proba[:, 1]"
+  y_hat: "1[p >= theta]"
+  theta_outside_open_interval: block_and_record        # [FU-P] no epsilon substitution
+  consistency_check: "sign(d) >= 0 iff y_hat == 1 (recorded; a mismatch blocks)"   # [IMPL]
+monitors:                            # [FU-P]
+  M0: {name: margin_only, score: "-|d|", training: none}
+  M1: {name: score_sqi_amplitude, inputs: [score_features, "sqi__* (15)", "amplitude__* (9)"],
+       missing_indicators: none}     # [IMPL] none of the 7 indicators relates to SQI/amplitude; neither group has NaN in Development
+  M2: {name: score_all_classical, inputs: [score_features, all 97 classical columns]}   # strong classical monitor
+  M3: {name: ph_only_monitor, inputs: [pi_pre_post_diff]}
+  M4: {name: score_all_classical_ph, inputs: [score_features, all 97 classical columns, pi_pre_post_diff]}
+primary_comparison: "M4 - M2"        # [FU-P] Delta_R80; negative favours adding PH
+forbidden_inputs:                    # [FU-P] checked by name and by provenance
+  - condition
+  - pvc_label
+  - error_label
+  - snr_target
+  - noise_type
+  - snippet_id
+  - scale_a
+  - subject_id
+  - record_id
+  - event_id
+  - annotation_r_peaks
+  - clean_counterpart_of_noisy_half
+  - counterfactual_pair_differences   # C3-C1, C2-C0
+
+# E-04 leakage-free nested BaseFit / ErrorTable ----------------------------------------------------------------------
+nesting:                             # [FU-P]
+  BaseFit(A): "everything (imputation, scaler, C, threshold, coefficients) from subjects in A only"
+  ErrorTable(A): "for each k in A: BaseFit(A \\ {k}) predicts all windows of k; rows carry the generating fit id"
+  outer: "s held out; T = Dev \\ {s}; evaluation base = BaseFit(T); monitor trained on ErrorTable(T)"
+  inner: "j in T held out; U = T \\ {j}; monitor trained on ErrorTable(U); j labelled and scored with BaseFit(U)"
+  forbidden_shortcut: "subsetting ErrorTable(T) or any existing OOF table"
+  fit_cache:                         # [FU-P 4.7] a fitted base pipeline is shared only between identical fits
+    key: [sorted_training_subjects, C, classical_features_sha256, config_sha256, code_hash]
+    scope: in_memory_within_run      # no earlier OOF or model is reused
+  workers: 1                         # [IMPL] sequential in one process (1 BLAS thread); changed from 4 before any fit, results do not depend on it
+
+# E-05 monitor candidates, PI, weights ----------------------------------------------------------------------------------
+monitor_training:                    # [FU-P]
+  classifier: {kind: l2_logistic_regression, solver: lbfgs, max_iter: 5000}
+  c_grid: [0.1, 1.0, 10.0]
+  tie_break: smaller_C               # ties: |difference| <= 1e-12
+  imputation: training_rows_median_unweighted
+  standardization: standard_scaler_unweighted_in_pipeline
+  weights: F-01                      # C0/C1 rows 1/(4 S n_s), C2/C3 rows 1/(72 S n_s), rescaled to mean 1
+  class_rebalancing: none            # no class_weight; error/correct ratio is not changed
+  single_class_fallback: "constant score = F-01 weighted training error rate; record constant_monitor_fallback and reason"
+  selection_objective: "inner held-out subjects: subject-equal mean of count-based selective risk at 80 % coverage; lowest wins"
+persistence_image:                   # [FU-P] pilot defaults, not claimed optimal for error monitoring
+  representations: [cub_sub_h0, cub_super_h0, vr_h0, vr_h1]   # [L3] existing definitions; VR H0 one-dimensional
+  resolution: 10
+  sigma_pixels: 1
+  parts: [pre, post, post_minus_pre]
+  range_source: monitor_training_subjects_C0_C1_only           # T for the outer monitor, U for each inner monitor
+  range_quantiles: {birth: [0.005, 0.995], persistence: [0.0, 0.995]}   # [L3]
+  out_of_range: keep_original_coordinates_no_clipping          # [L3]; counts logged
+seeds:                               # [IMPL] no stochastic step in fitting (lbfgs); streams named for audit
+  base: 20261031
+  tie_break: "sha256('20261031|tie|' + window_id), window_id = event_id|condition|noise_type|snr_target"
+  bootstrap_reserved_for_full_run: [20261031, 1]
+
+# E-06 primary endpoint and standardized secondary report -----------------------------------------------------------------
+evaluation:                          # [FU-P]
+  primary_endpoint: "Delta_R80 = R_macro,M4(0.80) - R_macro,M2(0.80), window-count coverage, subject-equal mean"
+  acceptance: "per subject sort by monitor score ascending (tie hash), accept k_s = max(1, floor(c * N_s)) windows"
+  labels_used_for_sorting: none
+  realized_coverage: reported        # k_s / N_s, never rounded to c
+  coverages: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+  secondary: [R90, risk_coverage_curve, AURC_0.5_1, error_auroc, error_auprc, error_prevalence, by_noise_snr_class]
+  aurc: "trapezoid over the six grid coverages on [0.5, 1.0]; raw integral (interval length 0.5); not the full-range AURC"
+  standardized: "same accepted set: F-01 weighted selective risk and F-01 weighted coverage; reported separately"
+  error_detection_metrics: "window-level on the evaluation subject, unweighted; NA with reason if one class is absent"
+  bootstrap: none_in_pilot           # [FU-P 6.6] paired subject bootstrap (1,000) only if a full run is approved
+
+# E-07 operating threshold and safety decomposition ---------------------------------------------------------------------
+operating_threshold:                 # [FU-P 6.4]
+  source: "inner OOF monitor scores of the training subjects at the selected C (M0: -|d| from BaseFit(U))"
+  rule: "smallest observed score t such that the subject-equal mean of window-count coverage (score <= t) >= 0.80"   # [IMPL]
+  applied_unchanged_to_outer: true   # no recalibration on the held-out subject
+safety_report: [C0_C1_C2_C3_coverage, accepted_pvc_sensitivity, accepted_false_negative_share_of_all_pvc,
+                accepted_false_positive_rate, abstention_rate_of_FP, abstention_rate_of_FN]
+
+# E-08 pilot only ------------------------------------------------------------------------------------------------------------
+pilot:
+  outer_subject: S105                # [FU-P] fixed; never changed after results
+  stop_after: report                 # no full run, final Development monitor, external data or new Test
+  determinism_check: "BaseFit(T) and the outer M4 monitor fitted twice; scores equal within 1e-12"   # [IMPL]

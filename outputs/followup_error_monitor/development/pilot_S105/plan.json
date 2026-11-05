@@ -1,0 +1,22 @@
+{
+  "full": {
+    "basefits_by_size": {
+      "7": 120,
+      "8": 45,
+      "9": 10
+    },
+    "monitor_fits": 1120,
+    "unique_basefits": 175,
+    "unique_units": 1925
+  },
+  "pilot": {
+    "basefits_by_size": {
+      "7": 36,
+      "8": 9,
+      "9": 1
+    },
+    "monitor_fits": 112,
+    "unique_basefits": 46,
+    "unique_units": 650
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "AURC_0_5_1": {
+    "M0": 0.05340775238086077,
+    "M1": 0.040072908387726126,
+    "M2": 0.04155843127712466,
+    "M3": 0.06690221816717362,
+    "M4": 0.03799731983736425
+  },
+  "Delta_R80_M4_minus_M2": -0.014755959137343927,
+  "Delta_R90_M4_minus_M2": -0.010090817356205845,
+  "R80": {
+    "M0": 0.1191827468785471,
+    "M1": 0.07832009080590238,
+    "M2": 0.0851305334846765,
+    "M3": 0.12939841089670828,
+    "M4": 0.07037457434733257
+  },
+  "R90": {
+    "M0": 0.13420787083753785,
+    "M1": 0.10595358224016145,
+    "M2": 0.11806256306760847,
+    "M3": 0.136226034308779,
+    "M4": 0.10797174571140263
+  },
+  "basefits": 46,
+  "blas": {
+    "env": {
+      "MKL_NUM_THREADS": "1",
+      "NUMEXPR_NUM_THREADS": "1",
+      "OMP_NUM_THREADS": "1",
+      "OPENBLAS_NUM_THREADS": "1",
+      "VECLIB_MAXIMUM_THREADS": "1"
+    },
+    "threadpools": [
+      [
+        "openblas",
+        1
+      ],
+      [
+        "openmp",
+        1
+      ],
+      [
+        "openblas",
+        1
+      ]
+    ]
+  },
+  "cache_hits": 1229,
+  "fallbacks": [],
+  "main_peak_rss_mb": 1153.984375,
+  "matrix_cache_hits": 164,
+  "max_child_peak_rss_mb": 0,
+  "monitor_convergence_warnings": 0,
+  "monitor_fit_time_median_s": 0.642802299989853,
+  "monitor_fit_time_total_s": 102.30298680037959,
+  "monitor_fits": 113,
+  "packages": {
+    "numpy": "2.5.4",
+    "pandas": "2.3.3",
+    "pyarrow": "26.0.0",
+    "scikit-learn": "1.9.1",
+    "scipy": "1.18.1"
+  },
+  "stage_wall_seconds": {
+    "audit": 0.055943000013940036,
+    "base_regression": 14.828737400006503,
+    "error_tables": 160.75391760002822,
+    "evaluation": 0.9298925999901257,
+    "inputs": 32.980123699991964,
+    "monitors": 170.4853222000529
+  },
+  "total_wall_s": 380.03393650008366,
+  "unit_convergence_warnings": 0,
+  "unit_fit_time_median_s": 0.01851475003059022,
+  "unit_fit_time_total_s": 16.776515599922277,
+  "units": 646
+}

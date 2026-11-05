@@ -51,3 +51,11 @@ outputs/final_test/jobs/
 outputs/final_test/regime1_jobs/
 # Paper prose drafts stay local until the researcher decides to publish them
 paper/drafts/
+
+# Follow-up error monitor: large or detailed intermediate outputs stay local
+outputs/followup_error_monitor/**/*.parquet
+outputs/followup_error_monitor/**/hashes/
+outputs/followup_error_monitor/**/input_manifest.json
+outputs/followup_error_monitor/**/training_dependencies.csv
+outputs/followup_error_monitor/**/base_model_fits.csv
+outputs/followup_error_monitor/**/base_error_summary.csv
