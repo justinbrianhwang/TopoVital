@@ -24,18 +24,23 @@ def main(argv=None):
     commands.add_parser("plan")
     commands.add_parser("pilot")
     commands.add_parser("full")
+    commands.add_parser("freeze-full")
     commands.add_parser("blas-check")
     args = parser.parse_args(argv)
-    report = verify_blas_threads()
     if args.command == "blas-check":
+        report = verify_blas_threads()
         print(json.dumps(report if report is not None else blas_thread_report(), sort_keys=True))
         return 0
     root = PROJECT_ROOT
     cfg = load_yaml(root / "configs/followup_error_monitor_v0_1.yaml")
+    if args.command == "freeze-full":
+        from .full import freeze_full
+        print(json.dumps(freeze_full(root, cfg), indent=2, sort_keys=True))
+        return 0
     if args.command == "full":
-        if not cfg["approved_for_full_run"]:
-            raise BlockedError("full run requires approved_for_full_run")
-        raise BlockedError("full run is not implemented")
+        from .full import run_full
+        print(json.dumps(run_full(root, cfg), indent=2, sort_keys=True))
+        return 0
     if args.command == "pilot":
         if not cfg["approved_for_pilot"]:
             raise BlockedError("pilot requires approved_for_pilot")

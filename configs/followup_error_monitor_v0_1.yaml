@@ -5,9 +5,10 @@
 # fixed here before any pilot result was seen · [L3] inherited unchanged from configs/stage1_level3.yaml and the configs
 # it inherits (stage1_factorial.yaml, stage1_analysis.yaml).
 
-status: approved_for_pilot           # [FU-P] researcher message 2026-11-04: implement, test, run the S105 pilot, report, stop
+status: approved_for_full_run        # [FU-F] researcher message 2026-11-04, after the S105 pilot report: full 10-fold approved
 approved_for_pilot: true
-approved_for_full_run: false         # [FU-P] the full 10-fold outer LOSO and any external data are not approved
+approved_for_full_run: true          # [FU-F] Development 10-fold only; base model, M0-M4, PI and C candidates, weights and
+                                     # operating-threshold rule unchanged; no external data, no Test, no v0.2, no final model
 version: "0.1"
 
 # E-01 task and scope ------------------------------------------------------------------------------------------
@@ -165,3 +166,41 @@ pilot:
   outer_subject: S105                # [FU-P] fixed; never changed after results
   stop_after: report                 # no full run, final Development monitor, external data or new Test
   determinism_check: "BaseFit(T) and the outer M4 monitor fitted twice; scores equal within 1e-12"   # [IMPL]
+
+# E-09 full Development 10-fold run --------------------------------------------------------------------------------------------
+# [FU-F] researcher message 2026-11-04 after the S105 pilot. The secondary comparison M4 - M1 and the decompositions below
+# were added after the pilot result had been seen; they are reporting additions, not changes to models or rules.
+full_run:
+  outer_subjects: all_development    # every one of the 10 subjects is held out once
+  output_dir: outputs/followup_error_monitor/development/full_10fold
+  pilot_reuse: recompute_all_folds   # S105 is recomputed inside the full run, checked against the pilot (1e-12) and counted once
+  primary_comparison: "M4 - M2, subject-equal R80 (window-count coverage 0.80)"
+  key_secondary_comparison: "M4 - M1, subject-equal R80"   # [FU-F]; reported alongside, never substituted for the primary
+  no_post_hoc_baseline_choice: true  # M1 and M2 are both reported; neither is chosen as 'the' baseline after the results
+  other_reported_pairs: ["M4 - M0", "M4 - M3", "M2 - M1"]  # descriptive
+  bootstrap:
+    kind: paired_subject_cluster     # the same subject resamples for every monitor and every pair
+    resamples: 1000
+    seed: [20261031, 1]              # reserved stream from the pilot config
+    statistic: "mean over resampled subjects of the per-subject difference"
+    ci: percentile_95
+    metrics: [R80, R90, AURC_0.5_1, standardized_R80, operating_risk, operating_coverage]
+    interpretation: "sampling uncertainty of fixed out-of-fold results; model selection is not repeated inside resamples"
+  report_separately:
+    retrospective: "fixed window-count coverage 0.80 / 0.90 per subject"
+    operating: "training-derived threshold applied unchanged; realized coverage and risk per subject and subject mean"
+  pvc_decomposition:                 # per subject and subject-equal mean, for the retrospective 80 % set and the operating set
+    pvc: [accepted_correct, accepted_missed, abstained_correct, abstained_missed]   # shares of all PVC windows (C1, C3)
+    non_pvc: [accepted_correct, accepted_false_positive, abstained_correct, abstained_false_positive]
+    by_class: [C0, C1, C2, C3]
+  swap_analysis:                     # technical description of which windows drive the difference; no inference
+    pairs: ["M4 vs M2", "M4 vs M1"]
+    set: retrospective_80            # equal set sizes per subject, so error-count differences are exact
+    per_window: "in A only / in B only, with y, y_hat, error type, condition, noise, SNR, event, subject"
+    summaries: [net_error_change_by_subject, by_error_type, by_condition, by_noise_snr, by_event]
+    concentration: "share of the net error change explained by the top 1, 3 and 5 events and by each subject"
+  freeze:                            # before the full run
+    record: outputs/followup_error_monitor/development/full_10fold/freeze_record.json
+    contents: [git_commit, code_sha256, config_sha256, package_versions, python, blas_report]
+    run_requires: "clean git tree for topovital_followup/ and this config, and hashes equal to the freeze record"
+  report: local_first                # results are verified and reported locally before any publication

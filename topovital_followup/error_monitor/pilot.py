@@ -131,22 +131,28 @@ def run_pilot(root, cfg):
     return summary
 
 
-def compute_fold(windows, classical, outer, cfg, *, threshold_target, hashes, reference=None, log=print):
+def compute_fold(windows, classical, outer, cfg, *, threshold_target, hashes, reference=None, log=print,
+                 store=None, table_cache=None):
     """Compute a held-out fold without reading or writing project files."""
     subjects = frozenset(w["subject_id"] for w in windows)
     training = subjects - {outer}
     if outer not in subjects or len(training) < 3:
         raise BlockedError("outer subject or training subjects missing")
     feature_sha, config_sha, code_sha = hashes
-    store = BaseFitStore(windows, classical, cfg["base_model"]["c_grid"], threshold_target,
-                         feature_sha, config_sha, code_sha)
+    if store is None:
+        store = BaseFitStore(windows, classical, cfg["base_model"]["c_grid"], threshold_target,
+                             feature_sha, config_sha, code_sha)
+    if table_cache is None:
+        table_cache = {}
+    if store.windows is not windows or store.classical is not classical or store.hashes != hashes:
+        raise BlockedError("shared BaseFitStore inputs differ")
     base = store.basefit(training)
     outer_indices = subject_rows(windows, {outer})
     outer_frame = base.predict(windows, classical, outer_indices)
     fit_rows = lambda: [{"basefit_id": b.id, "subjects": ",".join(sorted(b.subjects)), "selected_C": b.c,
                          "threshold_primary": b.theta, "cv_score": b.cv_score,
                          "unit_ids": json.dumps(b.unit_ids), "cache_keys": json.dumps([store.units[k].cache_key for k in store.units if store.units[k].id in b.unit_ids])}
-                        for b in store.basefits.values()]
+                        for b in store.basefits.values() if outer not in b.subjects]
     audit = []
     if reference is not None:
       try:
@@ -158,12 +164,16 @@ def compute_fold(windows, classical, outer, cfg, *, threshold_target, hashes, re
     log("base_regression")
 
     tables = {}
-    tables[training] = store.error_table(training)
+    if training not in table_cache:
+        table_cache[training] = store.error_table(training)
+    tables[training] = table_cache[training]
     eval_frames = {outer: outer_frame.assign(table_id=f"evaluation:{outer}", role="evaluation",
                                                   training_subjects=",".join(sorted(training)))}
     for held in sorted(training):
         subset = training - {held}
-        tables[subset] = store.error_table(subset)
+        if subset not in table_cache:
+            table_cache[subset] = store.error_table(subset)
+        tables[subset] = table_cache[subset]
         fitted = store.basefit(subset)
         eval_frames[held] = fitted.predict(windows, classical, subject_rows(windows, {held})).assign(
             table_id=f"evaluation:{held}", role="evaluation", training_subjects=",".join(sorted(subset)))
@@ -179,7 +189,9 @@ def compute_fold(windows, classical, outer, cfg, *, threshold_target, hashes, re
                                  "FN": int(((group.y == 1) & (group.y_hat == 0)).sum()),
                                  "independent_error_subjects": int(group.loc[group.e == 1, "subject_id"].nunique()),
                                  "both_classes_present": group.e.nunique() == 2})
-    audit.extend(provenance_check(outer, store.basefits.values(), list(tables.values())))
+    fold_units = [u for u in store.units.values() if outer not in u.subjects]
+    fold_basefits = [b for b in store.basefits.values() if outer not in b.subjects]
+    audit.extend(provenance_check(outer, fold_basefits, list(tables.values())))
     for held in sorted(training):
         subset = training - {held}
         audit.append(inner_provenance_check(held, subset, tables[subset], eval_frames[held]))
@@ -316,7 +328,7 @@ def compute_fold(windows, classical, outer, cfg, *, threshold_target, hashes, re
                      for held in [*sorted(training), outer]
                      for c in (cfg["monitor_training"]["c_grid"] if held != outer else
                                [min((r for r in selection if r["model"] == model), key=lambda r: (round(r["mean_R80"], 12), r["C"]))["C"]])]
-    audit.append(outer_check(outer, store.units.values(), store.basefits.values(), list(tables.values()),
+    audit.append(outer_check(outer, fold_units, fold_basefits, list(tables.values()),
                              [eval_frames[j] for j in training], [training, *(training - {j} for j in training)],
                              [training, *(training - {j} for j in training)]))
     audit.extend(feature_rows)
